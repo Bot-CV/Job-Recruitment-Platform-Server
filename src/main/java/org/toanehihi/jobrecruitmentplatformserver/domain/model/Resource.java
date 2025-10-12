@@ -21,26 +21,23 @@ public class Resource {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "mime_type")
+	@Column(name = "mime_type", nullable = false)
 	private String mimeType;
 
-	@Column(name = "owner_id")
-	private Long ownerId;
-
 	@Enumerated(EnumType.STRING)
-	@Column(name = "owner_type")
-	private ResourceType ownerType;
+	@Column(name = "resource_type", nullable = false)
+	private ResourceType resourceType;
 
-	@Column(name = "url")
+	@Column(name = "url", nullable = false)
 	private String url;
 
 	@Column(name = "public_id", nullable = false, unique = true)
 	private String publicId;
 
-	@Column(name = "name")
+	@Column(name = "name", nullable = false)
 	private String name;
 
 	@CreationTimestamp
-	@Column(name = "uploaded_at")
+	@Column(name = "uploaded_at", nullable = false)
 	private OffsetDateTime uploadedAt;
 }

@@ -7,12 +7,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.application.candidate.service.CandidateService;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -48,6 +51,13 @@ public class CandidateController {
     DataResponse<String> removeSavedJob(@PathVariable Long jobId) {
         return DataResponse.<String>builder()
                 .data("Remove saved job successfully")
+                .build();
+    }
+
+    @PutMapping("/avatar")
+    DataResponse<ResourceResponse> updateAvatar(@RequestParam("file") MultipartFile file) {
+        return DataResponse.<ResourceResponse>builder()
+                .data(candidateService.updateAvatar(file))
                 .build();
     }
 }

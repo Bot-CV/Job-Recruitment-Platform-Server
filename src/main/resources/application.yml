@@ -15,7 +15,7 @@ spring:
       ddl-auto: none
     show-sql: true
     properties:
-      hibernate:	⚠️ Nên bỏ @Transactional
+      hibernate:
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
         dialect: org.hibernate.dialect.PostgreSQLDialect

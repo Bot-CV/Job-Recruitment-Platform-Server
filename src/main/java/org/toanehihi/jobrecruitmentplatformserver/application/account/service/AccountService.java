@@ -16,6 +16,4 @@ public interface AccountService {
     void forgotPassword(ForgotPasswordRequest request);
 
     void resetPassword(ResetPasswordRequest request);
-
-    
 }

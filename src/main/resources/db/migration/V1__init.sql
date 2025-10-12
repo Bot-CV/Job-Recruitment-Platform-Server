@@ -372,14 +372,11 @@ CREATE TABLE
     resources (
         id BIGSERIAL PRIMARY KEY,
         mime_type TEXT NOT NULL,
-        owner_id BIGINT NOT NULL,
-        owner_type resource_type NOT NULL,
+        resource_type resource_type NOT NULL,
         url TEXT NOT NULL,
         public_id VARCHAR(36) NOT NULL UNIQUE,
         name TEXT NOT NULL,
         uploaded_at TIMESTAMPTZ (3) NOT NULL DEFAULT NOW ()
     );
-
-CREATE INDEX idx_resources_owner ON resources (owner_id, owner_type);
 
 CREATE INDEX idx_resources_uploaded_at ON resources (uploaded_at DESC);

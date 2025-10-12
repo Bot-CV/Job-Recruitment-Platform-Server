@@ -5,6 +5,9 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudStorageService;
+import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudinaryStorageImpl.CloudinaryFileInfo;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
@@ -12,20 +15,25 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.Candidate;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.CandidateSkill;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Job;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Location;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.Resource;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.SavedJob;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Skill;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ResourceType;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.candidate.CandidateMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.SavedJobMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.location.LocationMapper;
+import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.resource.ResourceMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.CandidateRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.JobRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.LocationRepository;
+import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.ResourceRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.SavedJobRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.SkillRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.security.CurrentAccountProvider;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.skill.CandidateSkillRequest;
 
 import jakarta.transaction.Transactional;
@@ -40,10 +48,13 @@ public class CandidateServiceImpl implements CandidateService {
     private final SkillRepository skillRepository;
     private final JobRepository jobRepository;
     private final SavedJobRepository savedJobRepository;
+    private final ResourceRepository resourceRepository;
     private final LocationMapper locationMapper;
     private final CandidateMapper candidateMapper;
     private final SavedJobMapper savedJobMapper;
+    private final ResourceMapper resourceMapper;
     private final CurrentAccountProvider currentAccountProvider;
+    private final CloudStorageService cloudStorageService;
 
     @Override
     public CandidateResponse getProfile() {
@@ -110,6 +121,25 @@ public class CandidateServiceImpl implements CandidateService {
     }
 
     @Override
+    public ResourceResponse updateAvatar(MultipartFile file) {
+        Candidate candidate = getCurrentCandidate();
+        Optional<Resource> currentAvt = resourceRepository.findById(candidate.getAvatarResourceId());
+        if (currentAvt.isPresent()) {
+            resourceRepository.delete(currentAvt.get());
+        }
+        CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(file, "avatar");
+        Resource resource = Resource.builder()
+                .mimeType(fileInfo.mimeType())
+                .resourceType(ResourceType.AVATAR)
+                .url(fileInfo.url())
+                .publicId(fileInfo.publicId())
+                .name("avatar")
+                .build();
+        Resource savedResource = resourceRepository.save(resource);
+        return resourceMapper.toResponse(savedResource);
+    }
+
+    @Override
     public void removeSavedJob(Long jobId) {
         Candidate candidate = getCurrentCandidate();
         savedJobRepository.deleteByCandidateAndJobId(candidate, jobId);
@@ -118,8 +148,7 @@ public class CandidateServiceImpl implements CandidateService {
     // Private methods
     private Candidate getCurrentCandidate() {
         Account account = currentAccountProvider.getCurrentAccount();
-        return candidateRepository.findById(account.getId())
+        return candidateRepository.findByAccountId(account.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
     }
-
 }

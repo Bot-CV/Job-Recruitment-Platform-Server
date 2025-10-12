@@ -8,7 +8,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
- 
 
 @Getter
 @Setter
@@ -36,21 +35,19 @@ public class Company {
 	@Column(name = "logo_resource_id")
 	private Long logoResourceId;
 
-    @Column(name = "verified")
-    @Builder.Default
-    private boolean verified = false;
+	@Column(name = "verified")
+	@Builder.Default
+	private boolean verified = false;
 
 	@CreationTimestamp
 	@Column(name = "date_created")
 	private OffsetDateTime dateCreated;
 
 	@OneToOne(mappedBy = "company")
-    @JsonIgnore
+	@JsonIgnore
 	private Recruiter recruiter;
 
-    @OneToMany(mappedBy = "company")
-    @Builder.Default
-    private Set<CompanyLocation> companyLocations = new HashSet<>();
+	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
+	private Set<CompanyLocation> companyLocations = new HashSet<>();
 }
-
-

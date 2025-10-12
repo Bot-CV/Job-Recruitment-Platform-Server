@@ -26,7 +26,6 @@ public class AccountServiceImpl implements AccountService {
     private final TokenService tokenService;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
-
     private static final String RESET_TOKEN_PREFIX = "reset_token:";
     private static final String VERIFICATION_TOKEN_PREFIX = "verify_token:";
 

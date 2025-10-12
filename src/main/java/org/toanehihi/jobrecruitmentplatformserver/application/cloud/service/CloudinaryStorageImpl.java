@@ -27,7 +27,7 @@ public class CloudinaryStorageImpl implements CloudStorageService {
 
     @Override
     @Transactional
-    public Map<String, String> storeFile(MultipartFile file, String folderName) {
+    public CloudinaryFileInfo storeFile(MultipartFile file, String folderName) {
         try {
             if (file.isEmpty()) {
                 throw new AppException(ErrorCode.FILE_EMPTY);
@@ -55,9 +55,7 @@ public class CloudinaryStorageImpl implements CloudStorageService {
             String secureUrl = (String) uploadResult.get("secure_url");
             String uploadedPublicId = (String) uploadResult.get("public_id");
 
-            return Map.of(
-                    "imageUrl", secureUrl,
-                    "publicId", uploadedPublicId);
+            return new CloudinaryFileInfo(secureUrl, uploadedPublicId, resourceType);
         } catch (IOException e) {
             log.error("Failed to upload file: {}", e.getMessage());
             throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
@@ -84,5 +82,8 @@ public class CloudinaryStorageImpl implements CloudStorageService {
         if (contentType.startsWith("video/"))
             return "video";
         return "raw";
+    }
+
+    public record CloudinaryFileInfo(String url, String publicId, String mimeType) {
     }
 }
