@@ -1,5 +1,6 @@
 package org.toanehihi.jobrecruitmentplatformserver.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -25,6 +26,7 @@ public class JobRole {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "sub_family_id")
+    @JsonIgnore
 	private SubFamily subFamily;
 
 	@CreationTimestamp
