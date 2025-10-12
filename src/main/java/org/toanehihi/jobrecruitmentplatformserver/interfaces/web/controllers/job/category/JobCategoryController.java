@@ -9,10 +9,8 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.JobFamily;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/v1/job/category")
+@RequestMapping("/api/public/job/category")
 public class JobCategoryController {
     private final JobCategoryService jobCategoryService;
 
