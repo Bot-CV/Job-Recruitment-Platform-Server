@@ -34,6 +34,9 @@ public class Resource {
 	@Column(name = "url")
 	private String url;
 
+	@Column(name = "public_id", nullable = false, unique = true)
+	private String publicId;
+
 	@Column(name = "name")
 	private String name;
 
@@ -41,5 +44,3 @@ public class Resource {
 	@Column(name = "uploaded_at")
 	private OffsetDateTime uploadedAt;
 }
-
-

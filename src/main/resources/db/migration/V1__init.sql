@@ -29,7 +29,13 @@ CREATE TYPE auth_provider AS ENUM ('LOCAL', 'GOOGLE');
 
 CREATE TYPE work_mode AS ENUM ('ONSITE', 'REMOTE', 'HYBRID');
 
-CREATE TYPE job_status AS ENUM ('DRAFT', 'PENDING', 'PUBLISHED', 'EXPIRED', 'CANCELED');
+CREATE TYPE job_status AS ENUM (
+    'DRAFT',
+    'PENDING',
+    'PUBLISHED',
+    'EXPIRED',
+    'CANCELED'
+);
 
 CREATE TYPE application_status AS ENUM (
     'SUBMITTED',
@@ -305,10 +311,10 @@ CREATE TABLE
     job_skill_requirements (
         job_id BIGINT NOT NULL,
         skill_id BIGINT NOT NULL,
---         level INTEGER NOT NULL CHECK (
---             level >= 0
---             AND level <= 5
---         ),
+        --         level INTEGER NOT NULL CHECK (
+        --             level >= 0
+        --             AND level <= 5
+        --         ),
         PRIMARY KEY (job_id, skill_id),
         CONSTRAINT fk_job_skill_requirements_job FOREIGN KEY (job_id) REFERENCES jobs (id) ON DELETE CASCADE,
         CONSTRAINT fk_job_skill_requirements_skill FOREIGN KEY (skill_id) REFERENCES skills (id) ON DELETE CASCADE
@@ -369,6 +375,7 @@ CREATE TABLE
         owner_id BIGINT NOT NULL,
         owner_type resource_type NOT NULL,
         url TEXT NOT NULL,
+        public_id VARCHAR(36) NOT NULL UNIQUE,
         name TEXT NOT NULL,
         uploaded_at TIMESTAMPTZ (3) NOT NULL DEFAULT NOW ()
     );
