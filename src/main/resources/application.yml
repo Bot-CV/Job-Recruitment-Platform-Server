@@ -15,7 +15,7 @@ spring:
       ddl-auto: none
     show-sql: true
     properties:
-      hibernate:
+      hibernate:	⚠️ Nên bỏ @Transactional
         jdbc:
           time_zone: Asia/Ho_Chi_Minh
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -47,6 +47,12 @@ spring:
             enable: true
   jackson:
     time-zone: Asia/Ho_Chi_Minh
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+
 #  profiles:
 #    default: dev
 app:

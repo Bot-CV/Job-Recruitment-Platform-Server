@@ -77,6 +77,9 @@ public enum ErrorCode {
     // Data errors(9801 - 9900)
     ENUM_INVALID_VALUE(9801, "Invalid enum value", HttpStatus.BAD_REQUEST),
     INVALID_REQUEST_DATA(9802, "Invalid request data", HttpStatus.BAD_REQUEST),
+    FILE_EMPTY(9803, "Input file must not empty", HttpStatus.FORBIDDEN),
+    FILE_TYPE_NOT_SUPPORTED(9804, "File type is not supported", HttpStatus.UNSUPPORTED_MEDIA_TYPE),
+    FILE_UPLOAD_FAILED(9805, "Fail to upload file", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // System errors (9901 - 9999)
     SYSTEM_UNKNOWN_ERROR(9998, "System unknow error", HttpStatus.INTERNAL_SERVER_ERROR),
