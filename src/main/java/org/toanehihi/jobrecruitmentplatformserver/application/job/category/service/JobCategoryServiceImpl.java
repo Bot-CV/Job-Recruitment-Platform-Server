@@ -10,8 +10,6 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.JobFamily;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.JobFamilyRepository;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class JobCategoryServiceImpl implements JobCategoryService {

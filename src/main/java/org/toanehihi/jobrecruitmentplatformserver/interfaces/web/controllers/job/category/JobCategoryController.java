@@ -9,8 +9,6 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.JobFamily;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1/job/category")
 public class JobCategoryController {
@@ -25,8 +23,7 @@ public class JobCategoryController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir
-    ) {
+            @RequestParam(defaultValue = "asc") String sortDir) {
         return DataResponse.<PageResult<JobFamily>>builder()
                 .data(jobCategoryService.getJobFamily(page, size, sortBy, sortDir))
                 .build();

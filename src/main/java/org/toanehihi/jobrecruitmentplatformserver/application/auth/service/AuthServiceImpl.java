@@ -92,6 +92,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AccountResponse recruiterRegister(RecruiterAccountRequest request) {
+        log.info("Login service!!!");
         Role role = roleRepository.findByName("RECRUITER")
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
 

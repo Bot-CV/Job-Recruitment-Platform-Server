@@ -103,6 +103,7 @@ public class RecruiterServiceImpl implements RecruiterService {
         Optional<Resource> currentAvt = resourceRepository.findById(recruiter.getAvatarResourceId());
         if (currentAvt.isPresent()) {
             resourceRepository.delete(currentAvt.get());
+            cloudStorageService.deleteFile(currentAvt.get().getPublicId());
         }
         CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(file, "avatar");
         Resource resource = Resource.builder()

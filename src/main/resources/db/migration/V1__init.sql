@@ -374,7 +374,7 @@ CREATE TABLE
         mime_type TEXT NOT NULL,
         resource_type resource_type NOT NULL,
         url TEXT NOT NULL,
-        public_id VARCHAR(36) NOT NULL UNIQUE,
+        public_id VARCHAR(255) NOT NULL UNIQUE,
         name TEXT NOT NULL,
         uploaded_at TIMESTAMPTZ (3) NOT NULL DEFAULT NOW ()
     );

@@ -126,6 +126,7 @@ public class CandidateServiceImpl implements CandidateService {
         Optional<Resource> currentAvt = resourceRepository.findById(candidate.getAvatarResourceId());
         if (currentAvt.isPresent()) {
             resourceRepository.delete(currentAvt.get());
+            cloudStorageService.deleteFile(currentAvt.get().getPublicId());
         }
         CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(file, "avatar");
         Resource resource = Resource.builder()
