@@ -20,8 +20,6 @@ public class JobCategoryServiceImpl implements JobCategoryService {
         Sort.Direction direction = sortDir.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page jobFamily = jobFamilyRepository.findAll(pageable);
-
-        return PageResult.from(jobFamily);
+        return PageResult.from(jobFamilyRepository.findAll(pageable));
     }
 }
