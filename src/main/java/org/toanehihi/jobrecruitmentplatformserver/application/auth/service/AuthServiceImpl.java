@@ -204,12 +204,16 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(ErrorCode.JWT_INVALID_TOKEN);
         }
 
-        if (tokenService.isBlacklisted(refreshToken)) {
-            throw new AppException(ErrorCode.JWT_TOKEN_BLACKLISTED);
-        }
-
         if (jwtService.isTokenExpired(refreshToken)) {
             throw new AppException(ErrorCode.JWT_EXPIRED_TOKEN);
+        }
+
+        if (!jwtService.validateToken(refreshToken)) {
+            throw new AppException(ErrorCode.JWT_INVALID_TOKEN);
+        }
+
+        if (tokenService.isBlacklisted(refreshToken)) {
+            throw new AppException(ErrorCode.JWT_TOKEN_BLACKLISTED);
         }
 
         String email = jwtService.extractEmail(refreshToken);
