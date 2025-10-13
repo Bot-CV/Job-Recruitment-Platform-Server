@@ -54,7 +54,7 @@ public class CandidateController {
                 .build();
     }
 
-    @PutMapping("/avatar")
+    @PostMapping("/avatar")
     DataResponse<ResourceResponse> updateAvatar(@RequestParam("file") MultipartFile file) {
         return DataResponse.<ResourceResponse>builder()
                 .data(candidateService.updateAvatar(file))

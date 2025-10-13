@@ -1,6 +1,7 @@
 package org.toanehihi.jobrecruitmentplatformserver.interfaces.web.controllers.recruiter;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,7 +46,7 @@ public class RecruiterController {
                 .build();
     }
 
-    @PutMapping("/avatar")
+    @PostMapping("/avatar")
     DataResponse<ResourceResponse> updateAvatar(@RequestParam("file") MultipartFile file) {
         return DataResponse.<ResourceResponse>builder()
                 .data(recruiterService.updateAvatar(file))
