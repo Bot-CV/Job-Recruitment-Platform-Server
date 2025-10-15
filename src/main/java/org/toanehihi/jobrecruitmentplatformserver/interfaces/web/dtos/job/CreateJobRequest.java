@@ -31,5 +31,7 @@ public class CreateJobRequest {
     private String hiringProcess;
     private String notes;
 
+    private boolean saveAsDraft;
+
     private List<Long> skillIds;
 }

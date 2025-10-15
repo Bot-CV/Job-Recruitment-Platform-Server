@@ -98,7 +98,7 @@ public class JobServiceImpl implements JobService {
         job.setLocation(location);
         job.setJobRole(jobRole);
         job.setDatePosted(OffsetDateTime.now());
-        job.setStatus(JobStatus.PENDING);
+        job.setStatus(request.isSaveAsDraft() ? JobStatus.DRAFT : JobStatus.PENDING);
 
         job = jobRepository.save(job);
         job.getDescription().setJob(job);
