@@ -40,6 +40,8 @@ public class CloudinaryStorageImpl implements CloudStorageService {
                 throw new AppException(ErrorCode.FILE_TYPE_NOT_SUPPORTED);
             }
 
+            String originalFileName = file.getOriginalFilename();
+
             String publicId = UUID.randomUUID().toString();
 
             @SuppressWarnings("unchecked")
@@ -55,7 +57,7 @@ public class CloudinaryStorageImpl implements CloudStorageService {
             String secureUrl = (String) uploadResult.get("secure_url");
             String uploadedPublicId = (String) uploadResult.get("public_id");
 
-            return new CloudinaryFileInfo(secureUrl, uploadedPublicId, resourceType);
+            return new CloudinaryFileInfo(secureUrl, uploadedPublicId, resourceType, originalFileName);
         } catch (IOException e) {
             log.error("Failed to upload file: {}", e.getMessage());
             throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
@@ -84,6 +86,6 @@ public class CloudinaryStorageImpl implements CloudStorageService {
         return "raw";
     }
 
-    public record CloudinaryFileInfo(String url, String publicId, String mimeType) {
+    public record CloudinaryFileInfo(String url, String publicId, String mimeType, String fileName) {
     }
 }

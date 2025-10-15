@@ -4,6 +4,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicationResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
 
 public interface CandidateService {
@@ -16,7 +17,7 @@ public interface CandidateService {
 
     void removeSavedJob(Long jobId);
 
-    ResourceResponse updateAvatar(MultipartFile file);
+    ResourceResponse updateAvatar(MultipartFile avatar);
 
-    
+    JobApplicationResponse applyJob(Long jobId, MultipartFile cv);
 }

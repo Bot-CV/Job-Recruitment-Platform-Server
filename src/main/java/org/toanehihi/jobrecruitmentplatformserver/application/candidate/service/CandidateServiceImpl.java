@@ -14,16 +14,20 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Candidate;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.CandidateSkill;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Job;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.JobApplication;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Location;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Resource;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.SavedJob;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Skill;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ApplicationStatus;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ResourceType;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.candidate.CandidateMapper;
+import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.JobApplicationMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.SavedJobMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.location.LocationMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.resource.ResourceMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.CandidateRepository;
+import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.JobApplicationRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.JobRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.LocationRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.ResourceRepository;
@@ -33,6 +37,7 @@ import org.toanehihi.jobrecruitmentplatformserver.infrastructure.security.Curren
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicationResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.skill.CandidateSkillRequest;
 
@@ -49,10 +54,12 @@ public class CandidateServiceImpl implements CandidateService {
     private final JobRepository jobRepository;
     private final SavedJobRepository savedJobRepository;
     private final ResourceRepository resourceRepository;
+    private final JobApplicationRepository jobApplicationRepository;
     private final LocationMapper locationMapper;
     private final CandidateMapper candidateMapper;
     private final SavedJobMapper savedJobMapper;
     private final ResourceMapper resourceMapper;
+    private final JobApplicationMapper jobApplicationMapper;
     private final CurrentAccountProvider currentAccountProvider;
     private final CloudStorageService cloudStorageService;
 
@@ -121,29 +128,59 @@ public class CandidateServiceImpl implements CandidateService {
     }
 
     @Override
-    public ResourceResponse updateAvatar(MultipartFile file) {
+    public void removeSavedJob(Long jobId) {
+        Candidate candidate = getCurrentCandidate();
+        savedJobRepository.deleteByCandidateAndJobId(candidate, jobId);
+    }
+
+    @Override
+    @Transactional
+    public ResourceResponse updateAvatar(MultipartFile avatar) {
         Candidate candidate = getCurrentCandidate();
         Optional<Resource> currentAvt = resourceRepository.findById(candidate.getAvatarResourceId());
         if (currentAvt.isPresent()) {
             resourceRepository.delete(currentAvt.get());
             cloudStorageService.deleteFile(currentAvt.get().getPublicId());
         }
-        CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(file, "avatar");
+        CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(avatar, "avatar");
         Resource resource = Resource.builder()
                 .mimeType(fileInfo.mimeType())
                 .resourceType(ResourceType.AVATAR)
                 .url(fileInfo.url())
                 .publicId(fileInfo.publicId())
-                .name("avatar")
+                .name(fileInfo.fileName())
                 .build();
         Resource savedResource = resourceRepository.save(resource);
         return resourceMapper.toResponse(savedResource);
     }
 
     @Override
-    public void removeSavedJob(Long jobId) {
+    @Transactional
+    public JobApplicationResponse applyJob(Long jobId, MultipartFile cv) {
         Candidate candidate = getCurrentCandidate();
-        savedJobRepository.deleteByCandidateAndJobId(candidate, jobId);
+
+        Job job = jobRepository.findById(jobId).orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
+        CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(cv, "cv");
+
+        Resource resource = Resource.builder()
+                .mimeType(fileInfo.mimeType())
+                .resourceType(ResourceType.CV)
+                .url(fileInfo.url())
+                .publicId(fileInfo.publicId())
+                .name(fileInfo.fileName())
+                .build();
+        Resource savedResource = resourceRepository.save(resource);
+
+        JobApplication jobApplication = JobApplication.builder()
+                .candidate(candidate)
+                .job(job)
+                .status(ApplicationStatus.SUBMITTED)
+                .cvResourceId(savedResource.getId())
+                .build();
+
+        JobApplication savedJobApplication = jobApplicationRepository.save(jobApplication);
+
+        return jobApplicationMapper.toResponse(savedJobApplication);
     }
 
     // Private methods

@@ -1,9 +1,6 @@
 package org.toanehihi.jobrecruitmentplatformserver.interfaces.web.controllers.job.category;
 
-import jakarta.annotation.security.PermitAll;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.toanehihi.jobrecruitmentplatformserver.application.job.category.service.JobCategoryService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.JobFamily;

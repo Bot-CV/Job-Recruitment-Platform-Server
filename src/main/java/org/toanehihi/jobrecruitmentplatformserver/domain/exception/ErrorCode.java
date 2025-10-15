@@ -57,6 +57,7 @@ public enum ErrorCode {
     JOB_HAS_APPLICANTS_CANNOT_UPDATE(1504, "Job has applicants, cannot update", HttpStatus.BAD_REQUEST),
     JOB_EXPIRED_CANNOT_APPLY(1505, "Job is expired, cannot apply", HttpStatus.BAD_REQUEST),
     JOB_NOT_IN_PENDING_STATUS(1506, "Job is not in pending status", HttpStatus.BAD_REQUEST),
+    JOB_APPLICATION_NOT_FOUND(1507, "Job application not found", HttpStatus.NOT_FOUND),
 
     // Skill (1701 - 1750)
     SKILL_NOT_FOUND(1701, "Skill not found", HttpStatus.NOT_FOUND),
