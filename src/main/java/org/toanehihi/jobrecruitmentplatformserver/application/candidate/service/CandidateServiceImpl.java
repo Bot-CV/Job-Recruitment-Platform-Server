@@ -4,6 +4,11 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudStorageService;
@@ -34,6 +39,7 @@ import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.rep
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.SavedJobRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.SkillRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.security.CurrentAccountProvider;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
@@ -181,6 +187,18 @@ public class CandidateServiceImpl implements CandidateService {
         JobApplication savedJobApplication = jobApplicationRepository.save(jobApplication);
 
         return jobApplicationMapper.toResponse(savedJobApplication);
+    }
+
+    @Override
+    public PageResult<JobApplicationResponse> getAllApplications(int page, int size, String sortBy, String sortDir) {
+        Candidate candidate = getCurrentCandidate();
+
+        Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<JobApplication> applicationPage = jobApplicationRepository.findByCandidate(candidate, pageable);
+        Page<JobApplicationResponse> responsePage = applicationPage.map(jobApplicationMapper::toResponse);
+
+        return PageResult.from(responsePage);
     }
 
     // Private methods
