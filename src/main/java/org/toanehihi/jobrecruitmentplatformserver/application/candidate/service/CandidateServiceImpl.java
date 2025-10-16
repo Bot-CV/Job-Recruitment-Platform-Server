@@ -205,6 +205,6 @@ public class CandidateServiceImpl implements CandidateService {
     private Candidate getCurrentCandidate() {
         Account account = currentAccountProvider.getCurrentAccount();
         return candidateRepository.findByAccountId(account.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.AUTH_UNAUTHORIZED));
     }
 }

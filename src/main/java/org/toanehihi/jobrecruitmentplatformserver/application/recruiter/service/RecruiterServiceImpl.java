@@ -121,7 +121,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     private Recruiter getCurrentRecruiter() {
         Account account = currentAccountProvider.getCurrentAccount();
         return recruiterRepository.findByAccountId(account.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.AUTH_UNAUTHORIZED));
     }
 
 }
