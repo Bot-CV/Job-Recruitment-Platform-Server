@@ -179,10 +179,14 @@ Pagination responses use:
   - Form-Data: `file` (MultipartFile)
   - Response: ResourceResponse
 
-- POST `/api/candidates/apply/{jobId}`
+- POST `/api/candidates/applications/{jobId}`
   - Path: `jobId: number`
   - Form-Data: `file` (MultipartFile)
   - Response: JobApplicationResponse
+
+- GET `/api/candidates/applications`
+  - Query: `page, size, sortBy, sortDir`
+  - Response: DataResponse<JobApplicationResponse>
 
 ---
 

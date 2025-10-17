@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.application.candidate.service.CandidateService;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
@@ -62,10 +63,21 @@ public class CandidateController {
                 .build();
     }
 
-    @PostMapping("/apply/{jobId}")
+    @PostMapping("/applications/{jobId}")
     DataResponse<JobApplicationResponse> applyJob(@PathVariable Long jobId, @RequestParam("file") MultipartFile file) {
         return DataResponse.<JobApplicationResponse>builder()
                 .data(candidateService.applyJob(jobId, file))
+                .build();
+    }
+
+    @GetMapping("/applications")
+    DataResponse<PageResult<JobApplicationResponse>> getAllApplications(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        return DataResponse.<PageResult<JobApplicationResponse>>builder()
+                .data(candidateService.getAllApplications(page, size, sortBy, sortDir))
                 .build();
     }
 }
