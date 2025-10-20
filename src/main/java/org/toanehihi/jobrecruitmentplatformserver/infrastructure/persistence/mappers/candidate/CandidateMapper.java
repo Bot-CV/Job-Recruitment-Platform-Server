@@ -26,6 +26,7 @@ public class CandidateMapper {
         candidate.setRemotePref(request.getRemotePref());
         candidate.setRelocationPref(request.getRelocationPref());
         candidate.setBio(request.getBio());
+        candidate.setPhone(request.getPhone());
     }
 
     public CandidateResponse toResponse(Candidate candidate) {
@@ -33,6 +34,7 @@ public class CandidateMapper {
                 .id(candidate.getId())
                 .accountId(candidate.getAccount().getId())
                 .fullName(candidate.getFullName())
+                .phone(candidate.getPhone())
                 .location(candidate.getLocation() != null ? locationMapper.toResponse(candidate.getLocation()) : null)
                 .seniority(candidate.getSeniority())
                 .salaryExpectMin(candidate.getSalaryExpectMin())

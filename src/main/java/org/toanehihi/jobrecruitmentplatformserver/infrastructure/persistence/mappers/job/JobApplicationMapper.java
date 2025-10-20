@@ -6,6 +6,7 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.JobApplication;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.company.CompanyMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.JobApplicationRepository;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicantResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicationResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,24 @@ public class JobApplicationMapper {
                 .status(jobApplication.getStatus())
                 .cvResourceId(jobApplication.getCvResourceId())
                 .appliedAt(jobApplication.getAppliedAt())
+                .build();
+    }
+
+    public JobApplicantResponse toApplicantResponse(JobApplication jobApplication) {
+        return JobApplicantResponse.builder()
+                .id(jobApplication.getId())
+                .candidateId(jobApplication.getCandidate().getId())
+                .candidateName(jobApplication.getCandidate().getFullName())
+                .email(jobApplication.getCandidate().getAccount().getEmail())
+                .phone(jobApplication.getCandidate().getPhone())
+                .resource(jobApplication.getResources().stream()
+                        .map(resource -> ResourceResponse.builder()
+                                .id(resource.getId())
+                                .type(resource.getType())
+                                .url(resource.getUrl())
+                                .fileName(resource.getFileName())
+                                .build())
+                        .toList())
                 .build();
     }
 }

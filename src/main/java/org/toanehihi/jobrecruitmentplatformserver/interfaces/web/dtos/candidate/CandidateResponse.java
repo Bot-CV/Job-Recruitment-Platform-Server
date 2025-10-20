@@ -19,6 +19,7 @@ public class CandidateResponse {
     private Long id;
     private Long accountId;
     private String fullName;
+    private String phone;
     private LocationResponse location;
     private SeniorityLevel seniority;
     private Integer salaryExpectMin;

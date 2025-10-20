@@ -18,4 +18,6 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     Optional<JobApplication> findWithDetailsById(Long id);
 
     Page<JobApplication> findByCandidate(Candidate candidate, Pageable pageable);
+
+    Page<JobApplication> findByJobId(Long jobId, Pageable pageable);
 }

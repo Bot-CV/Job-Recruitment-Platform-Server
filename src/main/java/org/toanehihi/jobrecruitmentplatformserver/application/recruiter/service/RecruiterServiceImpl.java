@@ -28,6 +28,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.Co
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.CompanyRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.CompanyResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.JobResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicantResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.recruiter.RecruiterRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.recruiter.RecruiterResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
@@ -51,6 +52,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     private final CloudStorageService cloudStorageService;
     private final JobRepository jobRepository;
     private final JobMapper jobMapper;
+    private final JobApplicationRepository jobApplicationRepository;
 
     @Override
     public RecruiterResponse getProfile() {
@@ -140,6 +142,30 @@ public class RecruiterServiceImpl implements RecruiterService {
         }
 
         return jobs.map(jobMapper::toResponse);
+    }
+
+    @Override
+    public Page<JobApplicantResponse> getJobApplicants(Account account, Long jobId, int page, int size, String sortBy, String sortDir) {
+        Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
+
+        if (recruiter.getCompany() == null) {
+            throw new AppException(ErrorCode.RECRUITER_COMPANY_NOT_FOUND);
+        }
+
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
+
+        if (!job.getCompany().getId().equals(recruiter.getCompany().getId())) {
+            throw new AppException(ErrorCode.RECRUITER_UNAUTHORIZED_ACCESS_JOB_APPLICANTS);
+        }
+
+        Sort.Direction direction = sortDir.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<JobApplication> applications = jobApplicationRepository.findByJobId(jobId, pageable);
+
+        return applications.map(jobMapper::toJobApplicantResponse);
     }
 
     // Private methods

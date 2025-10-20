@@ -32,7 +32,7 @@ const ENUM = {
   work_mode: ['ONSITE','REMOTE','HYBRID'],
   job_status: ['DRAFT','PENDING','PUBLISHED','EXPIRED','CANCELED'],
   application_status: ['SUBMITTED','REVIEWED','INTERVIEW','OFFERED','REJECTED'],
-  resource_type: ['AVATAR','CV'],
+  resource_type: ['AVATAR','RESUME','COMPANY_LOGO'],
 };
 
 /* ---------- sizes ---------- */
