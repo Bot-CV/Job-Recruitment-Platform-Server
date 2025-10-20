@@ -45,7 +45,7 @@ CREATE TYPE application_status AS ENUM (
     'REJECTED'
 );
 
-CREATE TYPE resource_type AS ENUM ('AVATAR', 'CV');
+CREATE TYPE resource_type AS ENUM ('AVATAR', 'CV', 'COMPANY_LOGO');
 
 -- =====================================================
 -- CORE TABLES
@@ -107,6 +107,8 @@ CREATE TABLE
         name VARCHAR(200) NOT NULL,
         website VARCHAR(255),
         size VARCHAR(50), -- Số lượng nhân viên thể hiện quy mô công ty
+        description TEXT,
+        phone VARCHAR(20),
         logo_resource_id BIGINT,
         verified BOOLEAN NOT NULL DEFAULT FALSE,
         date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW ()
@@ -138,6 +140,7 @@ CREATE TABLE
         id BIGSERIAL PRIMARY KEY,
         account_id BIGINT NOT NULL UNIQUE,
         full_name VARCHAR(150),
+        phone VARCHAR(20),
         location_id BIGINT,
         seniority seniority_level,
         salary_expect_min INTEGER,
@@ -164,6 +167,7 @@ CREATE TABLE
         id BIGSERIAL PRIMARY KEY,
         account_id BIGINT NOT NULL UNIQUE,
         full_name VARCHAR(150),
+        phone VARCHAR(20),
         avatar_resource_id BIGINT NOT NULL,
         company_id BIGINT NOT NULL UNIQUE,
         date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),

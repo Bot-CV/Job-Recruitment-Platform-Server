@@ -28,6 +28,8 @@ public class Recruiter {
 	@Column(name = "full_name", length = 150)
 	private String fullName;
 
+    private String phone;
+
 	@Column(name = "avatar_resource_id", nullable = false)
 	private Long avatarResourceId;
 

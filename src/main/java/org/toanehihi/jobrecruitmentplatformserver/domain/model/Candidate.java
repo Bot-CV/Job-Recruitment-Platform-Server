@@ -31,6 +31,8 @@ public class Candidate {
 	@Column(name = "full_name")
 	private String fullName;
 
+    private String phone;
+
 	@ManyToOne
 	@JoinColumn(name = "location_id")
 	private Location location;

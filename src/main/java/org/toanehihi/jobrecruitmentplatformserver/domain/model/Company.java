@@ -29,6 +29,10 @@ public class Company {
 	@Column(name = "website")
 	private String website;
 
+    private String description;
+
+    private String phone;
+
 	@Column(name = "size")
 	private String size;
 
