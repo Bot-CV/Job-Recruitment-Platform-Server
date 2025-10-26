@@ -201,6 +201,18 @@ public class CandidateServiceImpl implements CandidateService {
         return PageResult.from(responsePage);
     }
 
+    @Override
+    public PageResult<SavedJobResponse> getAllSavedJobs(int page, int size, String sortBy, String sortDir) {
+        Candidate candidate = getCurrentCandidate();
+        Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<SavedJob> savedJobPage = savedJobRepository.findByCandidateId(candidate.getId(), pageable);
+
+        return PageResult.from(
+                savedJobPage.map(savedJobMapper::toResponse)
+        );
+    }
+
     // Private methods
     private Candidate getCurrentCandidate() {
         Account account = currentAccountProvider.getCurrentAccount();
