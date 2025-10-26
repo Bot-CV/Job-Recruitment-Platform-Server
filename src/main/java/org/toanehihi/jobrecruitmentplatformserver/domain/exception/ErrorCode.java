@@ -59,6 +59,7 @@ public enum ErrorCode {
     JOB_NOT_IN_PENDING_STATUS(1506, "Job is not in pending status", HttpStatus.BAD_REQUEST),
     JOB_APPLICATION_NOT_FOUND(1507, "Job application not found", HttpStatus.NOT_FOUND),
     RECRUITER_UNAUTHORIZED_ACCESS_JOB_APPLICANTS(1508, "Recruiter unauthorized to access job applicants", HttpStatus.FORBIDDEN),
+    JOB_ALREADY_PROCESSED(1509, "Job already processed", HttpStatus.CONFLICT),
 
     // Skill (1701 - 1750)
     SKILL_NOT_FOUND(1701, "Skill not found", HttpStatus.NOT_FOUND),

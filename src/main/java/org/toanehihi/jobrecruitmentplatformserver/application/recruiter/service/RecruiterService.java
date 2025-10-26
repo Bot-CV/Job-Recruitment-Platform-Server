@@ -3,6 +3,7 @@ package org.toanehihi.jobrecruitmentplatformserver.application.recruiter.service
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.CompanyRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.CompanyResponse;
@@ -25,5 +26,5 @@ public interface RecruiterService {
 
     Page<JobApplicantResponse> getJobApplicants(Account account, Long jobId, int page, int size, String sortBy, String sortDir);
 
-
+    JobApplicantResponse processCandidate(Account account, Long jobApplicationId, String action);
 }

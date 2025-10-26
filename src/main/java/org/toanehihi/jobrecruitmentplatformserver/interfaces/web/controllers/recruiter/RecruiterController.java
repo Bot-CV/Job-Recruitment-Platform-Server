@@ -77,4 +77,15 @@ public class RecruiterController {
                 .data(recruiterService.getJobApplicants(account, jobId, page, size, sortBy, sortDir))
                 .build();
     }
+
+    @PatchMapping("/company/{jobId}/applicants/{jobApplicationId}")
+    DataResponse<JobApplicantResponse> processCandidate(
+            @CurrentUser Account account,
+            @PathVariable Long jobApplicationId,
+            @RequestParam(value = "action") String action
+    ){
+        return DataResponse.<JobApplicantResponse>builder()
+                .data(recruiterService.processCandidate(account, jobApplicationId, action))
+                .build();
+    }
 }

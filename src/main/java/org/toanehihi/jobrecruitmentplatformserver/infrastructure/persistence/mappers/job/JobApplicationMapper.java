@@ -53,10 +53,12 @@ public class JobApplicationMapper {
 
         return JobApplicantResponse.builder()
                 .id(jobApplication.getId())
+                .jobId(jobApplication.getJob().getId())
                 .candidateId(jobApplication.getCandidate().getId())
                 .candidateName(jobApplication.getCandidate().getFullName())
                 .email(jobApplication.getCandidate().getAccount().getEmail())
                 .phone(jobApplication.getCandidate().getPhone())
+                .status(jobApplication.getStatus())
                 .resource(resources.stream()
                         .map(resourceMapper::toResponse)
                         .toList()

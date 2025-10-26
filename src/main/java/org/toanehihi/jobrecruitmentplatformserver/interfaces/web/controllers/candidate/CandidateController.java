@@ -74,10 +74,21 @@ public class CandidateController {
     DataResponse<PageResult<JobApplicationResponse>> getAllApplications(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createAt") String sortBy,
+            @RequestParam(defaultValue = "appliedAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
         return DataResponse.<PageResult<JobApplicationResponse>>builder()
                 .data(candidateService.getAllApplications(page, size, sortBy, sortDir))
+                .build();
+    }
+
+    @GetMapping("/saved-jobs")
+    DataResponse<PageResult<SavedJobResponse>> getAllSavedJobs(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "savedAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        return DataResponse.<PageResult<SavedJobResponse>>builder()
+                .data(candidateService.getAllSavedJobs(page, size, sortBy, sortDir))
                 .build();
     }
 }

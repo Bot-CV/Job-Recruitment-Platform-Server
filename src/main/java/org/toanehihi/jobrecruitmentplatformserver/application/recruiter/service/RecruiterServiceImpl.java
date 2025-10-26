@@ -16,6 +16,7 @@ import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.Clou
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.*;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ApplicationStatus;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.JobStatus;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ResourceType;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.company.CompanyMapper;
@@ -168,6 +169,32 @@ public class RecruiterServiceImpl implements RecruiterService {
         Page<JobApplication> applications = jobApplicationRepository.findByJobId(jobId, pageable);
 
         return applications.map(jobApplicationMapper::toApplicantResponse);
+    }
+
+    @Override
+    public JobApplicantResponse processCandidate(Account account, Long jobApplicationId, String action) {
+        action = action.toUpperCase();
+        if(!action.equals(ApplicationStatus.REVIEWED.toString()) && !action.equals(ApplicationStatus.REJECTED.toString())) {
+            throw new AppException(ErrorCode.INVALID_REQUEST_DATA);
+        }
+
+        JobApplication jobApplication = jobApplicationRepository.findById(jobApplicationId)
+                .orElseThrow(() -> new AppException(ErrorCode.JOB_APPLICATION_NOT_FOUND));
+
+        Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
+
+        if(!jobApplication.getJob().getCompany().getId().equals(recruiter.getCompany().getId())) {
+            throw new AppException(ErrorCode.RECRUITER_UNAUTHORIZED_ACCESS_JOB_APPLICANTS);
+        }
+
+        if(!jobApplication.getStatus().equals(ApplicationStatus.SUBMITTED)) {
+            throw new AppException(ErrorCode.JOB_ALREADY_PROCESSED);
+        }
+
+        jobApplication.setStatus(ApplicationStatus.valueOf(action));
+
+        return jobApplicationMapper.toApplicantResponse(jobApplicationRepository.save(jobApplication));
     }
 
     // Private methods
