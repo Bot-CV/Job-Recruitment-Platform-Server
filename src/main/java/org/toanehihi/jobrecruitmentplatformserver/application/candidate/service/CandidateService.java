@@ -23,4 +23,6 @@ public interface CandidateService {
     JobApplicationResponse applyJob(Long jobId, MultipartFile cv);
 
     PageResult<JobApplicationResponse> getAllApplications(int page, int size, String sortBy, String sortDir);
+
+    PageResult<SavedJobResponse> getAllSavedJobs(int page, int size, String sortBy, String sortDir);
 }

@@ -24,5 +24,5 @@ public interface RecruiterService {
 
     Page<JobApplicantResponse> getJobApplicants(Account account, Long jobId, int page, int size, String sortBy, String sortDir);
 
-
+    JobApplicantResponse processCandidate(Account account, Long jobApplicationId, String action);
 }
