@@ -136,7 +136,8 @@ public class CandidateServiceImpl implements CandidateService {
     @Override
     public void removeSavedJob(Long jobId) {
         Candidate candidate = getCurrentCandidate();
-        savedJobRepository.deleteByCandidateAndJobId(candidate, jobId);
+        Job job = jobRepository.findById(jobId).orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
+        savedJobRepository.deleteByCandidateAndJob(candidate, job);
     }
 
     @Override
