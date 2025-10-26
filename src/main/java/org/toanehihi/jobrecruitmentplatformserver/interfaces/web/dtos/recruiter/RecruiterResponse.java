@@ -16,6 +16,7 @@ public class RecruiterResponse {
     private Long id;
     private Long accountId;
     private String fullName;
+    private String phone;
     private Long avatarResourceId;
     private Company company;
     private OffsetDateTime dateCreated;

@@ -19,6 +19,7 @@ public class CandidateMapper {
 
     public void updateCandidate(Candidate candidate, CandidateRequest request) {
         candidate.setFullName(request.getFullName());
+        candidate.setPhone(request.getPhone());
         candidate.setSeniority(request.getSeniority());
         candidate.setSalaryExpectMin(request.getSalaryExpectMin());
         candidate.setSalaryExpectMax(request.getSalaryExpectMax());
@@ -26,7 +27,6 @@ public class CandidateMapper {
         candidate.setRemotePref(request.getRemotePref());
         candidate.setRelocationPref(request.getRelocationPref());
         candidate.setBio(request.getBio());
-        candidate.setPhone(request.getPhone());
     }
 
     public CandidateResponse toResponse(Candidate candidate) {

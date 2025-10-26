@@ -125,7 +125,8 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
 
     @Override
-    public Page<JobResponse> getCompanyJobs(Account account, String jobStatus, int page, int size, String sortBy, String sortDir) {
+    public Page<JobResponse> getCompanyJobs(Account account, String jobStatus, int page, int size, String sortBy,
+            String sortDir) {
         Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
 
@@ -136,10 +137,11 @@ public class RecruiterServiceImpl implements RecruiterService {
         Sort.Direction direction = sortDir.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<Job> jobs = jobRepository.findJobsByCompany_IdAndStatus(recruiter.getCompany().getId(), JobStatus.valueOf(jobStatus), pageable);
+        Page<Job> jobs = jobRepository.findJobsByCompany_IdAndStatus(recruiter.getCompany().getId(),
+                JobStatus.valueOf(jobStatus), pageable);
 
         log.info(String.valueOf(jobs.getSize()));
-        if(jobs.isEmpty()) {
+        if (jobs.isEmpty()) {
             throw new AppException(ErrorCode.JOB_NOT_FOUND);
         }
 
@@ -147,7 +149,8 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
 
     @Override
-    public Page<JobApplicantResponse> getJobApplicants(Account account, Long jobId, int page, int size, String sortBy, String sortDir) {
+    public Page<JobApplicantResponse> getJobApplicants(Account account, Long jobId, int page, int size, String sortBy,
+            String sortDir) {
         Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
 

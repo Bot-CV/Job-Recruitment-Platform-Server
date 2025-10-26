@@ -27,8 +27,6 @@ import org.toanehihi.jobrecruitmentplatformserver.application.auth.service.Custo
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity

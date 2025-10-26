@@ -14,6 +14,7 @@ public class RecruiterMapper {
                 .id(recruiter.getId())
                 .accountId(recruiter.getAccount().getId())
                 .fullName(recruiter.getFullName())
+                .phone(recruiter.getPhone())
                 .avatarResourceId(recruiter.getAvatarResourceId())
                 .company(recruiter.getCompany())
                 .dateCreated(recruiter.getDateCreated())
