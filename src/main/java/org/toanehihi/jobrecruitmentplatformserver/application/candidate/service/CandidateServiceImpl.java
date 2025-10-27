@@ -124,6 +124,9 @@ public class CandidateServiceImpl implements CandidateService {
     public SavedJobResponse saveJob(Long jobId) {
         Candidate candidate = getCurrentCandidate();
         Job job = jobRepository.findById(jobId).orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
+        if (savedJobRepository.existsByCandidateAndJob(candidate, job)) {
+            throw new AppException(ErrorCode.JOB_ALREADY_SAVED_TO_THIS_ACCOUNT);
+        }
         SavedJob savedJob = SavedJob.builder()
                 .candidate(candidate)
                 .job(job)
@@ -134,6 +137,7 @@ public class CandidateServiceImpl implements CandidateService {
     }
 
     @Override
+    @Transactional
     public void removeSavedJob(Long jobId) {
         Candidate candidate = getCurrentCandidate();
         Job job = jobRepository.findById(jobId).orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
@@ -210,8 +214,7 @@ public class CandidateServiceImpl implements CandidateService {
         Page<SavedJob> savedJobPage = savedJobRepository.findByCandidateId(candidate.getId(), pageable);
 
         return PageResult.from(
-                savedJobPage.map(savedJobMapper::toResponse)
-        );
+                savedJobPage.map(savedJobMapper::toResponse));
     }
 
     // Private methods

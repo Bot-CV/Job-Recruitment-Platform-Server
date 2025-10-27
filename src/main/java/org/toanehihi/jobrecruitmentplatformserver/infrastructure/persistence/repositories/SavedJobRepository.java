@@ -11,5 +11,8 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.SavedJob;
 @Repository
 public interface SavedJobRepository extends JpaRepository<SavedJob, Long> {
     void deleteByCandidateAndJob(Candidate candidate, Job job);
+
     Page<SavedJob> findByCandidateId(Long candidateId, Pageable pageable);
+
+    boolean existsByCandidateAndJob(Candidate candidate, Job job);
 }
