@@ -51,6 +51,7 @@ public class CandidateController {
 
     @DeleteMapping("/save/{jobId}")
     DataResponse<String> removeSavedJob(@PathVariable Long jobId) {
+        candidateService.removeSavedJob(jobId);
         return DataResponse.<String>builder()
                 .data("Remove saved job successfully")
                 .build();

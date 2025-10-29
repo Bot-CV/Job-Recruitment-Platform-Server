@@ -58,8 +58,10 @@ public enum ErrorCode {
     JOB_EXPIRED_CANNOT_APPLY(1505, "Job is expired, cannot apply", HttpStatus.BAD_REQUEST),
     JOB_NOT_IN_PENDING_STATUS(1506, "Job is not in pending status", HttpStatus.BAD_REQUEST),
     JOB_APPLICATION_NOT_FOUND(1507, "Job application not found", HttpStatus.NOT_FOUND),
-    RECRUITER_UNAUTHORIZED_ACCESS_JOB_APPLICANTS(1508, "Recruiter unauthorized to access job applicants", HttpStatus.FORBIDDEN),
+    RECRUITER_UNAUTHORIZED_ACCESS_JOB_APPLICANTS(1508, "Recruiter unauthorized to access job applicants",
+            HttpStatus.FORBIDDEN),
     JOB_ALREADY_PROCESSED(1509, "Job already processed", HttpStatus.CONFLICT),
+    JOB_ALREADY_SAVED_TO_THIS_ACCOUNT(1510, "Job already saved to this account", HttpStatus.BAD_REQUEST),
 
     // Skill (1701 - 1750)
     SKILL_NOT_FOUND(1701, "Skill not found", HttpStatus.NOT_FOUND),
