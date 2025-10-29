@@ -399,7 +399,7 @@ CREATE TABLE
         account_id BIGINT,
         event_type event_type NOT NULL,
         target_id BIGINT,
-        event_data JSONB,
+        metadata JSONB,
         occurred_at TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
         CONSTRAINT fk_analytics_events_account FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE SET NULL
     );

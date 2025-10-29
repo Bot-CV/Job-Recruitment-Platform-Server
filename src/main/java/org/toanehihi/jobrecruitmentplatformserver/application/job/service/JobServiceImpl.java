@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.toanehihi.jobrecruitmentplatformserver.application.analytics.service.AnalyticService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.*;
@@ -41,13 +42,18 @@ public class JobServiceImpl implements JobService {
     private final RecruiterRepository recruiterRepository;
     private final JobApplicationRepository jobApplicationRepository;
     private final JobDescriptionRepository jobDescriptionRepository;
+    private final AnalyticRepository analyticRepository;
+    private final AnalyticService analyticService;
 
 
     @Override
     public JobDetailResponse getJobDetail(Long id) {
-        return jobRepository.findById(id)
+        JobDetailResponse jobDetailResponse = jobRepository.findById(id)
                 .map(jobMapper::toJobDetailResponse)
                 .orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
+
+        analyticService.trackJobViewed(null, id);
+        return jobDetailResponse;
     }
 
     @Override
@@ -89,9 +95,9 @@ public class JobServiceImpl implements JobService {
 
         Set<Skill> skills = request.getSkillIds().stream()
                 .map(skillId -> {
-                    return skillRepository.findById(skillId).orElseThrow(()-> new AppException(ErrorCode.SKILL_NOT_FOUND));
+                    return skillRepository.findById(skillId).orElseThrow(() -> new AppException(ErrorCode.SKILL_NOT_FOUND));
                 })
-                        .collect(Collectors.toSet());
+                .collect(Collectors.toSet());
 
         job.setCompany(recruiter.getCompany());
         job.setSkills(skills);
@@ -139,6 +145,7 @@ public class JobServiceImpl implements JobService {
             throw new AppException(ErrorCode.JOB_HAS_APPLICANTS_CANNOT_UPDATE);
         }
     }
+
     private void updateJobBasicFields(Job job, UpdateJobRequest request) {
         if (request.getTitle() != null) {
             job.setTitle(request.getTitle());
@@ -168,6 +175,7 @@ public class JobServiceImpl implements JobService {
             job.setDateExpires(request.getDateExpires());
         }
     }
+
     private void updateJobRelations(Job job, UpdateJobRequest request) {
         if (request.getJobRoleId() != null) {
             JobRole jobRole = jobRoleRepository.findById(request.getJobRoleId())
@@ -226,7 +234,7 @@ public class JobServiceImpl implements JobService {
     @Override
     public JobResponse cancelJob(Account account, Long id) {
         Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
-                .orElseThrow(()-> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
 
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
@@ -243,7 +251,7 @@ public class JobServiceImpl implements JobService {
     @Override
     @HasAdminRole
     public JobResponse moderateJobPosting(Account account, Long id, String action) {
-        if (!account.getRole().getName().equals("ADMIN")){
+        if (!account.getRole().getName().equals("ADMIN")) {
             throw new AppException(ErrorCode.ACCESS_FORBIDDEN);
         }
 

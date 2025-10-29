@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.toanehihi.jobrecruitmentplatformserver.application.analytics.service.AnalyticService;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudStorageService;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudinaryStorageImpl.CloudinaryFileInfo;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
@@ -68,6 +69,7 @@ public class CandidateServiceImpl implements CandidateService {
     private final JobApplicationMapper jobApplicationMapper;
     private final CurrentAccountProvider currentAccountProvider;
     private final CloudStorageService cloudStorageService;
+    private final AnalyticService analyticService;
 
     @Override
     public CandidateResponse getProfile() {
@@ -133,6 +135,7 @@ public class CandidateServiceImpl implements CandidateService {
                 .savedAt(OffsetDateTime.now())
                 .build();
         SavedJob result = savedJobRepository.save(savedJob);
+        analyticService.trackJobSaved(candidate.getAccount().getId(), job.getId());
         return savedJobMapper.toResponse(result);
     }
 
@@ -191,6 +194,7 @@ public class CandidateServiceImpl implements CandidateService {
 
         JobApplication savedJobApplication = jobApplicationRepository.save(jobApplication);
 
+        analyticService.trackJobApplied(candidate.getAccount().getId(), job.getId());
         return jobApplicationMapper.toResponse(savedJobApplication);
     }
 

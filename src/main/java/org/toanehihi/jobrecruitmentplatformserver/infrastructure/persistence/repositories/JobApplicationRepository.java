@@ -1,5 +1,7 @@
 package org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories;
 
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Candidate;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Job;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.JobApplication;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ApplicationStatus;
 
 @Repository
 public interface JobApplicationRepository extends JpaRepository<JobApplication, Long> {
@@ -23,4 +26,8 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     Page<JobApplication> findByJobId(Long jobId, Pageable pageable);
 
     Long job(Job job);
+
+    Long countByJob_Company_IdAndStatus(Long companyId, ApplicationStatus status);
+
+    Long countByJob_Company_IdAndAppliedAtBetween(Long jobId, OffsetDateTime startDate, OffsetDateTime endDate);
 }
