@@ -52,7 +52,7 @@ public class JobServiceImpl implements JobService {
                 .map(jobMapper::toJobDetailResponse)
                 .orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
 
-        analyticService.trackJobViewed(null, id);
+//        analyticService.trackJobViewed(null, id);
         return jobDetailResponse;
     }
 
