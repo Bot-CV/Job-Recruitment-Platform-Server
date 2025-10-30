@@ -18,6 +18,10 @@ public class CompanyMapper {
         company.setName(request.getName());
         company.setWebsite(request.getWebsite());
         company.setSize(request.getWebsite());
+        company.setDescription(request.getDescription());
+        company.setPhone(request.getPhone());
+        company.setEmail(request.getEmail());
+        company.setIndustry(request.getIndustry());
     }
 
     public CompanyResponse toResponse(Company company) {

@@ -9,4 +9,8 @@ public class CompanyRequest {
     private String website;
     private String size;
     private List<CompanyLocationRequest> companyLocations;
+    private String description;
+    private String phone;
+    private String email;
+    private String industry;
 }

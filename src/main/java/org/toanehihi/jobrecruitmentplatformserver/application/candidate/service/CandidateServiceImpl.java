@@ -135,7 +135,7 @@ public class CandidateServiceImpl implements CandidateService {
                 .savedAt(OffsetDateTime.now())
                 .build();
         SavedJob result = savedJobRepository.save(savedJob);
-        analyticService.trackJobSaved(candidate.getAccount().getId(), job.getId());
+//        analyticService.trackJobSaved(candidate.getAccount().getId(), job.getId());
         return savedJobMapper.toResponse(result);
     }
 
@@ -194,7 +194,7 @@ public class CandidateServiceImpl implements CandidateService {
 
         JobApplication savedJobApplication = jobApplicationRepository.save(jobApplication);
 
-        analyticService.trackJobApplied(candidate.getAccount().getId(), job.getId());
+//        analyticService.trackJobApplied(candidate.getAccount().getId(), job.getId());
         return jobApplicationMapper.toResponse(savedJobApplication);
     }
 
