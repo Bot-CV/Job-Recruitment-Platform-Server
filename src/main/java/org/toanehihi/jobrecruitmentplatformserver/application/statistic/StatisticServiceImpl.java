@@ -3,12 +3,9 @@ package org.toanehihi.jobrecruitmentplatformserver.application.statistic;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.toanehihi.jobrecruitmentplatformserver.application.job.service.JobService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.Job;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.JobApplication;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Recruiter;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ApplicationStatus;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.JobStatus;
@@ -29,7 +26,6 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class StatisticServiceImpl implements StatisticService {
-    private final JobService jobService;
     private final JobRepository jobRepository;
     private final RecruiterRepository recruiterRepository;
     private final JobApplicationRepository jobApplicationRepository;
@@ -40,12 +36,14 @@ public class StatisticServiceImpl implements StatisticService {
         Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
 
-        Long currentPublishJobCount = jobRepository.countByCompany_IdAndStatus(recruiter.getCompany().getId(), JobStatus.PUBLISHED);
+        Long currentPublishJobCount = jobRepository.countByCompany_IdAndStatus(recruiter.getCompany().getId(),
+                JobStatus.PUBLISHED);
 
-        Long totalNewApplicationCount = jobApplicationRepository.countByJob_Company_IdAndStatus(recruiter.getCompany().getId(), ApplicationStatus.INTERVIEW);
+        Long totalNewApplicationCount = jobApplicationRepository.countByJob_Company_IdAndStatus(
+                recruiter.getCompany().getId(), ApplicationStatus.INTERVIEW);
 
-        Long totalPendingApplicationCount = jobApplicationRepository.countByJob_Company_IdAndStatus(recruiter.getCompany().getId(), ApplicationStatus.SUBMITTED);
-
+        Long totalPendingApplicationCount = jobApplicationRepository.countByJob_Company_IdAndStatus(
+                recruiter.getCompany().getId(), ApplicationStatus.SUBMITTED);
 
         ZonedDateTime now = ZonedDateTime.now();
 
@@ -65,8 +63,7 @@ public class StatisticServiceImpl implements StatisticService {
             Long count = jobApplicationRepository.countByJob_Company_IdAndAppliedAtBetween(
                     recruiter.getCompany().getId(),
                     startOfWeek,
-                    endOfWeek
-            );
+                    endOfWeek);
             weeklyApplicationCount.put(currentWeek - i, count);
         }
 
@@ -74,7 +71,8 @@ public class StatisticServiceImpl implements StatisticService {
                 .map(jobMapper::toResponse)
                 .toList();
 
-        List<NewestJobApplication> newestJobApplications = jobApplicationRepository.findTop3ByJobCompanyIdOrderByAppliedAtDesc(recruiter.getCompany().getId())
+        List<NewestJobApplication> newestJobApplications = jobApplicationRepository
+                .findTop3ByJobCompanyIdOrderByAppliedAtDesc(recruiter.getCompany().getId())
                 .orElseThrow(() -> new AppException(ErrorCode.JOB_APPLICATION_NOT_FOUND))
                 .stream()
                 .map(jobApplication -> {
@@ -85,7 +83,7 @@ public class StatisticServiceImpl implements StatisticService {
                             .build();
                 }).toList();
 
-        for(NewestJobApplication data:newestJobApplications){
+        for (NewestJobApplication data : newestJobApplications) {
             log.info(data.getCandidateName() + " " + data.getJobTitle() + " " + data.getAppliedAt());
         }
 

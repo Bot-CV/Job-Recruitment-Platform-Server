@@ -42,9 +42,7 @@ public class JobServiceImpl implements JobService {
     private final RecruiterRepository recruiterRepository;
     private final JobApplicationRepository jobApplicationRepository;
     private final JobDescriptionRepository jobDescriptionRepository;
-    private final AnalyticRepository analyticRepository;
     private final AnalyticService analyticService;
-
 
     @Override
     public JobDetailResponse getJobDetail(Long id) {
@@ -64,20 +62,21 @@ public class JobServiceImpl implements JobService {
         Page<JobResponse> jobs = jobRepository.findAll(pageable)
                 .map(jobMapper::toResponse);
 
-
         return PageResult.from(jobs);
     }
 
-//    @Override
-//    public PageResult<JobResponse> getPublishJobs(int page, int size, String sortBy, String sortDir){
-//        Sort.Direction direction = sortDir.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-//        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-//
-//        Page<JobResponse> jobs = jobRepository.findJobsByStatus(JobStatus.PUBLISHED, pageable)
-//                .map(jobMapper::toResponse);
-//        return PageResult.from(jobs);
-//    }
-
+    // @Override
+    // public PageResult<JobResponse> getPublishJobs(int page, int size, String
+    // sortBy, String sortDir){
+    // Sort.Direction direction = sortDir.equals("asc") ? Sort.Direction.ASC :
+    // Sort.Direction.DESC;
+    // Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+    //
+    // Page<JobResponse> jobs = jobRepository.findJobsByStatus(JobStatus.PUBLISHED,
+    // pageable)
+    // .map(jobMapper::toResponse);
+    // return PageResult.from(jobs);
+    // }
 
     @Override
     @Transactional
@@ -95,7 +94,8 @@ public class JobServiceImpl implements JobService {
 
         Set<Skill> skills = request.getSkillIds().stream()
                 .map(skillId -> {
-                    return skillRepository.findById(skillId).orElseThrow(() -> new AppException(ErrorCode.SKILL_NOT_FOUND));
+                    return skillRepository.findById(skillId)
+                            .orElseThrow(() -> new AppException(ErrorCode.SKILL_NOT_FOUND));
                 })
                 .collect(Collectors.toSet());
 
@@ -133,7 +133,6 @@ public class JobServiceImpl implements JobService {
         jobRepository.save(job);
         return jobMapper.toResponse(job);
     }
-
 
     private void validateJobCanBeUpdated(Job job) {
         if (job.getStatus() == JobStatus.CANCELED) {
@@ -268,7 +267,6 @@ public class JobServiceImpl implements JobService {
         job.setStatus(action.equals("APPROVE") ? JobStatus.PUBLISHED : JobStatus.CANCELED);
         return jobMapper.toResponse(jobRepository.save(job));
     }
-
 
     @Override
     public void deleteJob(Long id) {
