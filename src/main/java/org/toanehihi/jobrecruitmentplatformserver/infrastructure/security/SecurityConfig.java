@@ -59,6 +59,9 @@ public class SecurityConfig {
 
             // JobCategory public endpoints
             "/api/job/category",
+
+            // Company public endpoints
+            "/api/companies/public/**",
     };
 
     @Bean

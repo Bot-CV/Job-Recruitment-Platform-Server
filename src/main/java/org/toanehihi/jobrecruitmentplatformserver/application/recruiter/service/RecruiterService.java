@@ -16,6 +16,8 @@ public interface RecruiterService {
 
     RecruiterResponse updateProfile(RecruiterRequest request);
 
+    CompanyResponse getCompany(Long companyId);
+
     CompanyResponse updateCompany(CompanyRequest request);
 
     ResourceResponse updateAvatar(MultipartFile file);

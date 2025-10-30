@@ -16,7 +16,6 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "recruiters")
 public class Recruiter {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;

@@ -72,6 +72,12 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
 
     @Override
+    public CompanyResponse getCompany(Long companyId) {
+        Company company = companyRepository.findById(companyId).orElseThrow(() -> new AppException(ErrorCode.RECRUITER_COMPANY_NOT_FOUND));
+        return companyMapper.toResponse(company);
+    }
+
+    @Override
     @Transactional
     public CompanyResponse updateCompany(CompanyRequest request) {
         Recruiter recruiter = getCurrentRecruiter();

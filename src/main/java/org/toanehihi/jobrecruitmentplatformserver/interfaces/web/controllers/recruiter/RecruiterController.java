@@ -38,13 +38,6 @@ public class RecruiterController {
                 .build();
     }
 
-    @PutMapping("/company")
-    DataResponse<CompanyResponse> updateCompany(@RequestBody CompanyRequest request) {
-        return DataResponse.<CompanyResponse>builder()
-                .data(recruiterService.updateCompany(request))
-                .build();
-    }
-
     @PostMapping("/avatar")
     DataResponse<ResourceResponse> updateAvatar(@RequestParam("file") MultipartFile file) {
         return DataResponse.<ResourceResponse>builder()
