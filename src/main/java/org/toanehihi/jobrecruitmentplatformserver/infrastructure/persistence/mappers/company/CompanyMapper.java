@@ -18,6 +18,9 @@ public class CompanyMapper {
         company.setName(request.getName());
         company.setWebsite(request.getWebsite());
         company.setSize(request.getWebsite());
+        company.setDescription(request.getDescription());
+        company.setPhone(request.getPhone());
+        company.setEmail(request.getEmail());
     }
 
     public CompanyResponse toResponse(Company company) {

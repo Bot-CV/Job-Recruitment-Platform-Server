@@ -33,6 +33,8 @@ public class Company {
 
     private String phone;
 
+    private String email;
+
 	@Column(name = "size")
 	private String size;
 

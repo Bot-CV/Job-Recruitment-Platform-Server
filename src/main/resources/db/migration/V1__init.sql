@@ -116,6 +116,7 @@ CREATE TABLE
         size VARCHAR(50), -- Số lượng nhân viên thể hiện quy mô công ty
         description TEXT,
         phone VARCHAR(20),
+        email VARCHAR(255),
         logo_resource_id BIGINT,
         verified BOOLEAN NOT NULL DEFAULT FALSE,
         date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW ()
