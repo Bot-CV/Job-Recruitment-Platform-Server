@@ -1,7 +1,6 @@
 package org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories;
 
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,13 +8,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Candidate;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Job;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.JobApplication;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ApplicationStatus;
-import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.statistic.NewestJobApplication;
 
 @Repository
 public interface JobApplicationRepository extends JpaRepository<JobApplication, Long> {

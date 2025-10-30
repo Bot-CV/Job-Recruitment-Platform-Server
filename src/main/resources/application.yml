@@ -50,7 +50,6 @@ spring:
 #  profiles:
 #    default: dev
 
-
 cloudinary:
   cloud-name: ${CLOUDINARY_NAME}
   api-key: ${CLOUDINARY_API_KEY}
