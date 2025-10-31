@@ -13,19 +13,12 @@ import org.toanehihi.jobrecruitmentplatformserver.application.token.service.JwtS
 import org.toanehihi.jobrecruitmentplatformserver.application.token.service.TokenService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.Candidate;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.Company;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.Recruiter;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.Role;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.*;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.AccountStatus;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.AuthProvider;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ResourceType;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.account.AccountMapper;
-import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.AccountRepository;
-import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.CandidateRepository;
-import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.CompanyRepository;
-import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.RecruiterRepository;
-import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.RoleRepository;
+import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.*;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.account.AccountResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.account.CandidateAccountRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.account.RecruiterAccountRequest;
@@ -54,6 +47,7 @@ public class AuthServiceImpl implements AuthService {
     private final TokenService tokenService;
     private final GoogleOAuthService googleOAuthService;
     private final PasswordEncoder passwordEncoder;
+    private final ResourceRepository resourceRepository;
 
     @Override
     @Transactional
@@ -89,10 +83,18 @@ public class AuthServiceImpl implements AuthService {
         account.setProvider(AuthProvider.LOCAL);
         Account savedAccount = accountRepository.save(account);
 
+        Resource resource = Resource.builder()
+                .resourceType(ResourceType.AVATAR)
+                .url("https://www.topcv.vn/images/avatar-default.jpg")
+                .mimeType("image/jpeg")
+                .name("default-avatar.jpg")
+                .build();
+        resource = resourceRepository.save(resource);
+
         Candidate candidate = Candidate.builder()
                 .account(savedAccount)
                 .fullName(request.getFullName())
-                .avatarResourceId(123L) // create default avatar later
+                .avatarResourceId(resource.getId())
                 .build();
         candidateRepository.save(candidate);
 

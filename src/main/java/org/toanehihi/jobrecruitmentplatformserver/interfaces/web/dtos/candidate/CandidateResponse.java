@@ -28,7 +28,6 @@ public class CandidateResponse {
     private String currency;
     private Boolean remotePref;
     private Boolean relocationPref;
-//    private Long avatarResourceId;
     private ResourceResponse resource;
     private String bio;
     private OffsetDateTime dateCreated;
