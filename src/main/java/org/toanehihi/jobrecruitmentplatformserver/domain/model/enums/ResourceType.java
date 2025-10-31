@@ -4,6 +4,7 @@ public enum ResourceType {
 	AVATAR,
 	CV,
     COMPANY_LOGO,
+    JOB_ATTACHMENT
 }
 
 

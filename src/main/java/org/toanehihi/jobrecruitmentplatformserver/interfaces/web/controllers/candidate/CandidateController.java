@@ -57,12 +57,12 @@ public class CandidateController {
                 .build();
     }
 
-    @PostMapping("/avatar")
-    DataResponse<ResourceResponse> updateAvatar(@RequestParam("file") MultipartFile file) {
-        return DataResponse.<ResourceResponse>builder()
-                .data(candidateService.updateAvatar(file))
-                .build();
-    }
+//    @PostMapping("/avatar")
+//    DataResponse<ResourceResponse> updateAvatar(@RequestParam("file") MultipartFile file) {
+//        return DataResponse.<ResourceResponse>builder()
+//                .data(candidateService.updateAvatar(file))
+//                .build();
+//    }
 
     @PostMapping("/applications/{jobId}")
     DataResponse<JobApplicationResponse> applyJob(@PathVariable Long jobId, @RequestParam("file") MultipartFile file) {

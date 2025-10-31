@@ -18,7 +18,7 @@ public interface CandidateService {
 
     void removeSavedJob(Long jobId);
 
-    ResourceResponse updateAvatar(MultipartFile avatar);
+//    ResourceResponse updateAvatar(MultipartFile avatar);
 
     JobApplicationResponse applyJob(Long jobId, MultipartFile cv);
 

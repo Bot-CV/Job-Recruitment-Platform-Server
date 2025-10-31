@@ -45,7 +45,7 @@ CREATE TYPE application_status AS ENUM (
     'REJECTED'
 );
 
-CREATE TYPE resource_type AS ENUM ('AVATAR', 'CV', 'COMPANY_LOGO');
+CREATE TYPE resource_type AS ENUM ('AVATAR', 'CV', 'COMPANY_LOGO', 'JOB_ATTACHMENT');
 
 CREATE TYPE event_type AS ENUM (
     'SEARCH_QUERY',
@@ -385,6 +385,7 @@ CREATE INDEX idx_saved_jobs_saved_at ON saved_jobs (saved_at DESC);
 CREATE TABLE
     resources (
         id BIGSERIAL PRIMARY KEY,
+        owner_id BIGINT,
         mime_type TEXT NOT NULL,
         resource_type resource_type NOT NULL,
         url TEXT NOT NULL,

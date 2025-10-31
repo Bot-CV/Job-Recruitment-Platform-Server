@@ -20,6 +20,7 @@ public enum ErrorCode {
     ID_TOKEN_BLANK(1009, "ID token is required", HttpStatus.FORBIDDEN),
     REFRESH_TOKEN_REQUIRED(1010, "Refresh token is required", HttpStatus.FORBIDDEN),
     LEVEL_INVALID(1011, "Level must be in range 0 - 5", HttpStatus.BAD_REQUEST),
+    ACCOUNT_DOES_NOT_SUPPORT(1012, "This account does not support this operation", HttpStatus.FORBIDDEN),
 
     // Auth (1101 - 1200)
     AUTH_UNAUTHENTICATED(1101, "Unauthenticated", HttpStatus.FORBIDDEN),
@@ -75,6 +76,7 @@ public enum ErrorCode {
     // Resource (9651 - 9700)
     RESOURCE_NOT_FOUND(9651, "Resource not found", HttpStatus.NOT_FOUND),
     RESOURCE_TYPE_MISMATCH(9652, "Resource type mismatch", HttpStatus.BAD_REQUEST),
+    RESOURCE_UPLOAD_FAILED(9653, "Resource upload failed", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // Database constraint violations(9701 - 9800)
     DATABASE_CONSTRAINT_VIOLATION(9701, "Database constraint violated", HttpStatus.BAD_REQUEST),

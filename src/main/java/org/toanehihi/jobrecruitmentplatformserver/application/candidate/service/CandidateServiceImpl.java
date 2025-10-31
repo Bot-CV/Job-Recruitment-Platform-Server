@@ -147,30 +147,30 @@ public class CandidateServiceImpl implements CandidateService {
         savedJobRepository.deleteByCandidateAndJob(candidate, job);
     }
 
-    @Override
-    @Transactional
-    public ResourceResponse updateAvatar(MultipartFile avatar) {
-        Candidate candidate = getCurrentCandidate();
-        Optional<Resource> currentAvt = resourceRepository.findById(candidate.getAvatarResourceId());
-        if (currentAvt.isPresent()) {
-            resourceRepository.delete(currentAvt.get());
-            cloudStorageService.deleteFile(currentAvt.get().getPublicId());
-        }
-        CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(avatar, "avatar");
-        Resource resource = Resource.builder()
-                .mimeType(fileInfo.mimeType())
-                .resourceType(ResourceType.AVATAR)
-                .url(fileInfo.url())
-                .publicId(fileInfo.publicId())
-                .name(fileInfo.fileName())
-                .build();
-        Resource savedResource = resourceRepository.save(resource);
-
-        candidate.setAvatarResourceId(savedResource.getId());
-        candidate.setDateUpdated(OffsetDateTime.now());
-        candidateRepository.save(candidate);
-        return resourceMapper.toResponse(savedResource);
-    }
+//    @Override
+//    @Transactional
+//    public ResourceResponse updateAvatar(MultipartFile avatar) {
+//        Candidate candidate = getCurrentCandidate();
+//        Optional<Resource> currentAvt = resourceRepository.findById(candidate.getAvatarResourceId());
+//        if (currentAvt.isPresent()) {
+//            resourceRepository.delete(currentAvt.get());
+//            cloudStorageService.deleteFile(currentAvt.get().getPublicId());
+//        }
+//        CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(avatar, "avatar");
+//        Resource resource = Resource.builder()
+//                .mimeType(fileInfo.mimeType())
+//                .resourceType(ResourceType.AVATAR)
+//                .url(fileInfo.url())
+//                .publicId(fileInfo.publicId())
+//                .name(fileInfo.fileName())
+//                .build();
+//        Resource savedResource = resourceRepository.save(resource);
+//
+//        candidate.setAvatarResourceId(savedResource.getId());
+//        candidate.setDateUpdated(OffsetDateTime.now());
+//        candidateRepository.save(candidate);
+//        return resourceMapper.toResponse(savedResource);
+//    }
 
     @Override
     @Transactional
