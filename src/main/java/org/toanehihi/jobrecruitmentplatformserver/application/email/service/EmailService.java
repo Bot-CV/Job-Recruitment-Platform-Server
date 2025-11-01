@@ -1,5 +1,6 @@
 package org.toanehihi.jobrecruitmentplatformserver.application.email.service;
 
+import io.lettuce.core.BitFieldArgs;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Location;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.interview.CreateInterviewRequest;
 
@@ -11,5 +12,6 @@ public interface EmailService {
 
     void sendInterviewInvitationEmail(Location location, OffsetDateTime scheduledAt,String fullName, String candidateEmail);
 
+    void sendInterviewUpdateEmail(Location location, OffsetDateTime oldScheduledAt, OffsetDateTime scheduledAt, String fullName, String candidateEmail);
 
 }

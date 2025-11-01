@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thư Mời Phỏng Vấn</title>
+    <title>Thông Báo Thay Đổi Lịch Phỏng Vấn</title>
     <style>
         body {
             font-family: Arial, 'Segoe UI', Tahoma, sans-serif;
@@ -20,7 +20,7 @@
             border: 1px solid #e0e0e0;
         }
         .email-header {
-            background-color: #00b14f;
+            background-color: #ff9800;
             padding: 25px 30px;
             text-align: center;
         }
@@ -44,14 +44,27 @@
             margin-bottom: 15px;
             text-align: justify;
         }
+        .alert-box {
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .alert-box p {
+            margin: 0;
+            color: #e65100;
+            font-size: 14px;
+            font-weight: 500;
+        }
         .info-section {
             background-color: #f9f9f9;
-            border-left: 3px solid #00b14f;
+            border-left: 3px solid #ff9800;
             padding: 20px;
             margin: 25px 0;
         }
         .info-section h3 {
-            color: #00b14f;
+            color: #ff9800;
             font-size: 17px;
             margin-top: 0;
             margin-bottom: 15px;
@@ -71,8 +84,8 @@
             color: #555555;
         }
         .highlight-box {
-            background-color: #fffbe6;
-            border: 1px solid #ffd700;
+            background-color: #fff3e0;
+            border: 2px solid #ff9800;
             padding: 15px;
             margin: 20px 0;
             text-align: center;
@@ -86,7 +99,36 @@
         .highlight-box .value {
             font-size: 17px;
             font-weight: 600;
-            color: #d48806;
+            color: #e65100;
+        }
+        .comparison-box {
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .old-schedule {
+            background-color: #ffebee;
+            border: 1px solid #ef5350;
+        }
+        .old-schedule h4 {
+            color: #c62828;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        .new-schedule {
+            background-color: #e8f5e9;
+            border: 1px solid #66bb6a;
+        }
+        .new-schedule h4 {
+            color: #2e7d32;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        .comparison-box p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555555;
         }
         .section-title {
             color: #333333;
@@ -115,7 +157,7 @@
             color: #333333;
         }
         .signature strong {
-            color: #00b14f;
+            color: #ff9800;
         }
         .email-footer {
             background-color: #f5f5f5;
@@ -154,7 +196,7 @@
 <div class="email-wrapper">
     <!-- Header -->
     <div class="email-header">
-        <h1>THƯ MỜI PHỎNG VẤN</h1>
+        <h1>THÔNG BÁO THAY ĐỔI LỊCH PHỎNG VẤN</h1>
     </div>
 
     <!-- Body -->
@@ -164,19 +206,43 @@
             Kính gửi <strong>{{fullName}}</strong>,
         </div>
 
+        <!-- Alert Notice -->
+        <div class="alert-box">
+            <p>⚠️ Thông báo quan trọng: Lịch phỏng vấn của bạn đã được cập nhật</p>
+        </div>
+
         <!-- Opening -->
         <p class="content-text">
-            Công ty chúng tôi xin chân thành cảm ơn bạn đã quan tâm và gửi hồ sơ ứng tuyển. Sau khi xem xét kỹ lưỡng, chúng tôi rất vui mừng thông báo rằng hồ sơ của bạn đã được chọn vào vòng phỏng vấn.
+            Công ty chúng tôi xin chân thành cảm ơn bạn đã xác nhận tham gia buổi phỏng vấn. Tuy nhiên, do một số lý do bất khả kháng, chúng tôi cần thay đổi lịch phỏng vấn của bạn.
         </p>
 
         <p class="content-text">
-            Chúng tôi ấn tượng với kinh nghiệm và trình độ chuyên môn của bạn, và rất mong được gặp gỡ để trao đổi chi tiết hơn về cơ hội hợp tác.
+            Chúng tôi rất xin lỗi vì sự bất tiện này và mong bạn thông cảm. Dưới đây là thông tin lịch phỏng vấn mới:
         </p>
 
-        <!-- Interview Time -->
+        <!-- Schedule Comparison - TABLE FOR GMAIL -->
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 25px 0;">
+            <tr>
+                <td width="48%" valign="top">
+                    <div class="comparison-box old-schedule">
+                        <h4>❌ Lịch cũ</h4>
+                        <p><strong>Thời gian:</strong> {{oldScheduledAt}}</p>
+                    </div>
+                </td>
+                <td width="4%"></td>
+                <td width="48%" valign="top">
+                    <div class="comparison-box new-schedule">
+                        <h4>✅ Lịch mới</h4>
+                        <p><strong>Thời gian:</strong> {{newScheduledAt}}</p>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- New Interview Time -->
         <div class="highlight-box">
-            <div class="label">Thời gian phỏng vấn</div>
-            <div class="value">{{scheduledAt}}</div>
+            <div class="label">Thời gian phỏng vấn mới</div>
+            <div class="value">{{newScheduledAt}}</div>
         </div>
 
         <!-- Location Information -->
@@ -223,6 +289,9 @@
 
         <!-- Closing -->
         <div class="closing">
+            <p style="margin-bottom: 15px;">
+                Một lần nữa, chúng tôi xin lỗi vì sự thay đổi này. Nếu bạn có bất kỳ thắc mắc nào hoặc không thể tham gia vào thời gian mới, vui lòng liên hệ với chúng tôi sớm nhất.
+            </p>
             <p style="margin-bottom: 15px;">
                 Chúng tôi rất mong được gặp bạn và tìm hiểu thêm về năng lực cũng như sự phù hợp của bạn với vị trí này.
             </p>

@@ -5,8 +5,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.application.recruiter.service.RecruiterService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ApplicationStatus;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.annotation.CurrentUser;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.interview.CreateInterviewRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.interview.InterviewResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.interview.UpdateInterviewRequest;
@@ -76,7 +78,7 @@ public class RecruiterController {
     DataResponse<JobApplicantResponse> processCandidate(
             @CurrentUser Account account,
             @PathVariable Long jobApplicationId,
-            @RequestParam(value = "action") String action
+            @RequestParam(value = "action") ApplicationStatus action
     ){
         return DataResponse.<JobApplicantResponse>builder()
                 .data(recruiterService.processCandidate(account, jobApplicationId, action))
@@ -100,6 +102,18 @@ public class RecruiterController {
             ) {
         return DataResponse.<InterviewResponse>builder()
                 .data(recruiterService.updateInterview(account, request))
+                .build();
+    }
+
+    @GetMapping("/company/applicants/interview")
+    DataResponse<PageResult<InterviewResponse>> getAllInterviews(
+            @CurrentUser Account account,
+            @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") int size,
+            @RequestParam(value = "sortBy", required = false, defaultValue = "scheduledAt") String sortBy,
+            @RequestParam(value = "sortDir", required = false, defaultValue = "DESC") String sortDir) {
+        return DataResponse.<org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult<InterviewResponse>>builder()
+                .data(recruiterService.getAllInterviews(account, page, size, sortBy, sortDir))
                 .build();
     }
 }

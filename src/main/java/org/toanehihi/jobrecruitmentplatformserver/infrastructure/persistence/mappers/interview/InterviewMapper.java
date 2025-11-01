@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Interview;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.InterviewStatus;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.location.LocationMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.JobApplicationRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.LocationRepository;
@@ -23,6 +24,7 @@ public class InterviewMapper {
                 .id(interview.getId())
                 .applicationId(interview.getJobApplication().getId())
                 .scheduledAt(interview.getScheduledAt())
+                .jobTitle(interview.getJobApplication().getJob().getTitle())
                 .location(locationMapper.toResponse(interview.getLocation()))
                 .candidateName(interview.getJobApplication().getCandidate().getFullName())
                 .notes(interview.getNotes())
@@ -37,6 +39,8 @@ public class InterviewMapper {
                 .scheduledAt(request.getScheduledAt())
                 .jobApplication(jobApplicationRepository.findById(request.getApplicationId()).orElseThrow(() -> new AppException(ErrorCode.JOB_APPLICATION_NOT_FOUND)))
                 .location(locationRepository.findById(request.getLocationId()).orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND)))
+                .status(InterviewStatus.SCHEDULED)
+                .notes("")
                 .build();
     }
 }

@@ -17,14 +17,17 @@ import java.time.OffsetDateTime;
 @Table(name = "interviews")
 public class Interview {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "application_id")
     private JobApplication jobApplication;
 
     private OffsetDateTime scheduledAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "location_id")
     private Location location;
 
     @Enumerated(EnumType.STRING)

@@ -1,5 +1,6 @@
 package org.toanehihi.jobrecruitmentplatformserver.application.recruiter.service;
 
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -28,6 +29,7 @@ import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.map
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.resource.ResourceMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.*;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.security.CurrentAccountProvider;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.CompanyLocationRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.CompanyRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.CompanyResponse;
@@ -187,12 +189,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
 
     @Override
-    public JobApplicantResponse processCandidate(Account account, Long jobApplicationId, String action) {
-        action = action.toUpperCase();
-        if(!action.equals(ApplicationStatus.REVIEWED.toString()) && !action.equals(ApplicationStatus.REJECTED.toString())) {
-            throw new AppException(ErrorCode.INVALID_REQUEST_DATA);
-        }
-
+    public JobApplicantResponse processCandidate(Account account, Long jobApplicationId, ApplicationStatus action) {
         JobApplication jobApplication = jobApplicationRepository.findById(jobApplicationId)
                 .orElseThrow(() -> new AppException(ErrorCode.JOB_APPLICATION_NOT_FOUND));
 
@@ -207,7 +204,7 @@ public class RecruiterServiceImpl implements RecruiterService {
             throw new AppException(ErrorCode.JOB_ALREADY_PROCESSED);
         }
 
-        jobApplication.setStatus(ApplicationStatus.valueOf(action));
+        jobApplication.setStatus(action);
 
         return jobApplicationMapper.toApplicantResponse(jobApplicationRepository.save(jobApplication));
     }
@@ -226,6 +223,8 @@ public class RecruiterServiceImpl implements RecruiterService {
 
         Interview interview = interviewRepository.save(interviewMapper.toEntity(request));
 
+        jobApplication.setStatus(ApplicationStatus.INTERVIEW);
+        jobApplicationRepository.save(jobApplication);
         emailService.sendInterviewInvitationEmail(
                 interview.getLocation(),
                 interview.getScheduledAt(),
@@ -243,13 +242,39 @@ public class RecruiterServiceImpl implements RecruiterService {
         Interview interview = interviewRepository.findById(request.getInterviewId())
                 .orElseThrow(() -> new AppException(ErrorCode.INTERVIEW_NOT_FOUND));
 
+        OffsetDateTime oldScheduledAt = interview.getScheduledAt();
+
         if (!(interview.getJobApplication().getJob().getCompany().getId().equals(recruiter.getCompany().getId()))) {
             throw new AppException(ErrorCode.RECRUITER_UNAUTHORIZED_ACCESS_INTERVIEW);
         }
         interview.setScheduledAt(request.getScheduledAt());
         interview.setNotes(request.getNotes());
         interview.setStatus(request.getStatus());
-        return interviewMapper.toResponse(interviewRepository.save(interview));
+        interview.setLocation(locationRepository.findById(request.getLocationId()).orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND)));
+
+        interview = interviewRepository.save(interview);
+
+        emailService.sendInterviewUpdateEmail(interview.getLocation(),
+                oldScheduledAt,
+                interview.getScheduledAt(),
+                interview.getJobApplication().getCandidate().getFullName(),
+                interview.getJobApplication().getCandidate().getAccount().getEmail());
+        return interviewMapper.toResponse(interview);
+    }
+
+    @Override
+    public PageResult<InterviewResponse> getAllInterviews(Account account, int page, int size, String sortBy, String sortDir) {
+        Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(
+                sortDir.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC,
+                sortBy));
+
+        Page<InterviewResponse> interviews = interviewRepository.findByJobApplication_Job_Company_Id(recruiter.getCompany().getId(), pageable)
+                .map(interviewMapper::toResponse);
+
+        return PageResult.from(interviews);
     }
 
     // Private methods

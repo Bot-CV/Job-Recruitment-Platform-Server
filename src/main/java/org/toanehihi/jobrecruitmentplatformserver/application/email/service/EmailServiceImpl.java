@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -103,9 +106,13 @@ public class EmailServiceImpl implements EmailService {
             helper.setTo(candidateEmail);
             helper.setSubject("Thư mời phỏng vấn - Bot-CV");
 
-            String htmlContent = loadTemplate("interview-invitation.html")
+            ZonedDateTime hcmTime = scheduledAt.atZoneSameInstant(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+                    .withLocale(Locale.forLanguageTag("vi-VN"));
+
+            String htmlContent = loadTemplate("interview.html")
                     .replace("{{fullName}}", fullName)
-                    .replace("{{scheduledAt}}", scheduledAt.toString())
+                    .replace("{{scheduledAt}}", hcmTime.format(formatter))
                     .replace("{{streetAddress}}", location.getStreetAddress())
                     .replace("{{ward}}", location.getWard())
                     .replace("{{district}}", location.getDistrict())
@@ -117,6 +124,41 @@ public class EmailServiceImpl implements EmailService {
             emailSender.send(mimeMessage);
             log.info("Interview invitation email sent successfully to: {}", candidateEmail);
         } catch (MessagingException e) {
+            log.error("Failed to send interview invitation email to: {}", candidateEmail, e);
+            throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
+        }
+    }
+
+    @Override
+    public void sendInterviewUpdateEmail(Location location, OffsetDateTime oldScheduledAt, OffsetDateTime scheduledAt, String fullName, String candidateEmail) {
+        try{
+            MimeMessage mimeMessage = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setFrom(sourceEmail);
+            helper.setTo(candidateEmail);
+            helper.setSubject("Cập nhật lịch phỏng vấn - Bot-CV");
+
+            ZonedDateTime oldHcmTime = oldScheduledAt.atZoneSameInstant(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+            ZonedDateTime newHcmTime = scheduledAt.atZoneSameInstant(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+                    .withLocale(Locale.forLanguageTag("vi-VN"));
+            String htmlContent = loadTemplate("update-interview.html")
+                    .replace("{{fullName}}", fullName)
+                    .replace("{{oldScheduledAt}}", oldHcmTime.format(formatter))
+                    .replace("{{newScheduledAt}}", newHcmTime.format(formatter))
+                    .replace("{{streetAddress}}", location.getStreetAddress())
+                    .replace("{{ward}}", location.getWard())
+                    .replace("{{district}}", location.getDistrict())
+                    .replace("{{provinceCity}}", location.getProvinceCity())
+                    .replace("{{country}}", location.getCountry());
+
+            helper.setText(htmlContent, true);
+
+            emailSender.send(mimeMessage);
+            log.info("Interview update email sent successfully to: {}", candidateEmail);
+        }catch (MessagingException e) {
             log.error("Failed to send interview invitation email to: {}", candidateEmail, e);
             throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
         }
