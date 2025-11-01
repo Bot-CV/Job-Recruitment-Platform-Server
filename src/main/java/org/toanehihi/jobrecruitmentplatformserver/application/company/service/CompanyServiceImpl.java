@@ -1,26 +1,19 @@
 package org.toanehihi.jobrecruitmentplatformserver.application.company.service;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudStorageService;
-import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudinaryStorageImpl.CloudinaryFileInfo;
 import org.toanehihi.jobrecruitmentplatformserver.application.email.service.EmailService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.AttestationResource;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Company;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.Recruiter;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Resource;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ResourceType;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.company.CompanyMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.resource.ResourceMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.AttestationResourceRepository;
@@ -28,7 +21,6 @@ import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.rep
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.RecruiterRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.ResourceRepository;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.annotation.HasAdminRole;
-import org.toanehihi.jobrecruitmentplatformserver.interfaces.annotation.HasRecruiterRole;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.CompanyResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.VerifyCompanyRequest;
@@ -52,46 +44,6 @@ public class CompanyServiceImpl implements CompanyService {
     private final EmailService emailService;
 
     private static final String ADMIN = "ADMIN";
-    private static final String RECRUITER = "RECRUITER";
-
-    @Override
-    @HasRecruiterRole
-    @Transactional
-    public List<ResourceResponse> uploadAttestation(Account account, List<MultipartFile> files) {
-        if (!account.getRole().getName().equals(RECRUITER)) {
-            throw new AppException(ErrorCode.ACCESS_FORBIDDEN);
-        }
-
-        Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
-
-        if (recruiter.getCompany().isVerified()) {
-            throw new AppException(ErrorCode.COMPANY_HAS_BEEN_VERIFIED);
-        }
-        Company company = recruiter.getCompany();
-        Set<AttestationResource> attestations = new HashSet<>();
-        for (MultipartFile file : files) {
-            CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(file, "attestation");
-            Resource resource = Resource.builder()
-                    .mimeType(fileInfo.mimeType())
-                    .resourceType(ResourceType.ATTESTATION)
-                    .url(fileInfo.url())
-                    .publicId(fileInfo.publicId())
-                    .name(fileInfo.fileName())
-                    .build();
-            Resource savedResource = resourceRepository.save(resource);
-            AttestationResource attestation = AttestationResource.builder()
-                    .company(company)
-                    .resource(savedResource)
-                    .build();
-            attestations.add(attestation);
-        }
-        company.setAttestations(attestations);
-        companyRepository.save(company);
-        return attestations.stream()
-                .map(attestation -> resourceMapper.toResponse(attestation.getResource()))
-                .toList();
-    }
 
     @Override
     @HasAdminRole

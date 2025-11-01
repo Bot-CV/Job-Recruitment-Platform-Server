@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.application.company.service.CompanyService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.annotation.CurrentUser;
@@ -43,13 +42,6 @@ public class CompanyController {
             @PathVariable Long companyId) {
         return DataResponse.<List<ResourceResponse>>builder()
                 .data(companyService.getCompanyAttestations(account, companyId))
-                .build();
-    }
-
-    @PutMapping("/attestations")
-    DataResponse<List<ResourceResponse>> uploadAttestation(@CurrentUser Account account, List<MultipartFile> files) {
-        return DataResponse.<List<ResourceResponse>>builder()
-                .data(companyService.getCompanyAttestations(account, null))
                 .build();
     }
 
