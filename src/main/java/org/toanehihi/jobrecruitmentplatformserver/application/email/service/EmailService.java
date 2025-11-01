@@ -1,17 +1,17 @@
 package org.toanehihi.jobrecruitmentplatformserver.application.email.service;
 
-import io.lettuce.core.BitFieldArgs;
+import org.springframework.lang.Nullable;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Location;
-import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.interview.CreateInterviewRequest;
-
 import java.time.OffsetDateTime;
 
 public interface EmailService {
     void sendPasswordResetEmail(String recieveEmail, String token);
+
     void sendVerificationEmail(String receiveEmail, String token);
 
-    void sendInterviewInvitationEmail(Location location, OffsetDateTime scheduledAt,String fullName, String candidateEmail);
+    void sendCompanyVerificationResult(String receiveEmail, boolean isApproved, @Nullable String reason);
 
+    void sendInterviewInvitationEmail(Location location, OffsetDateTime scheduledAt, String fullName,
+            String candidateEmail);
     void sendInterviewUpdateEmail(Location location, OffsetDateTime oldScheduledAt, OffsetDateTime scheduledAt, String fullName, String candidateEmail);
-
 }

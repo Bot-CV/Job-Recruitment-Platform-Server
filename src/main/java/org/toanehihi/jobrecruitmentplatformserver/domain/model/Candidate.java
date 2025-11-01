@@ -1,3 +1,4 @@
+
 package org.toanehihi.jobrecruitmentplatformserver.domain.model;
 
 import jakarta.persistence.*;

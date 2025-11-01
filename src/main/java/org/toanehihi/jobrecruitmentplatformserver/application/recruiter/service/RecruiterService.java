@@ -21,15 +21,15 @@ public interface RecruiterService {
 
     RecruiterResponse updateProfile(RecruiterRequest request);
 
-    CompanyResponse getCompany(Long companyId);
-
     CompanyResponse updateCompany(CompanyRequest request);
 
     ResourceResponse updateAvatar(MultipartFile file);
 
-    Page<JobResponse> getCompanyJobs(Account account, String jobStatus, int page, int size, String sortBy, String sortDir);
+    Page<JobResponse> getCompanyJobs(Account account, String jobStatus, int page, int size, String sortBy,
+            String sortDir);
 
-    Page<JobApplicantResponse> getJobApplicants(Account account, Long jobId, int page, int size, String sortBy, String sortDir);
+    Page<JobApplicantResponse> getJobApplicants(Account account, Long jobId, int page, int size, String sortBy,
+            String sortDir);
 
     JobApplicantResponse processCandidate(Account account, Long jobApplicationId, ApplicationStatus action);
 

@@ -10,6 +10,7 @@ import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.lang.Nullable;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -35,6 +36,8 @@ public class EmailServiceImpl implements EmailService {
     @Value("${spring.mail.username}")
     private String sourceEmail;
 
+    private static final String HTML_ENCODING = "UTF-8";
+
     private String loadTemplate(String templateName) {
         try {
             ClassPathResource resource = new ClassPathResource("templates/email/" + templateName);
@@ -50,7 +53,7 @@ public class EmailServiceImpl implements EmailService {
     public void sendPasswordResetEmail(String recieveEmail, String token) {
         try {
             MimeMessage mimeMessage = emailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, HTML_ENCODING);
 
             helper.setFrom(sourceEmail);
             helper.setTo(recieveEmail);
@@ -74,7 +77,7 @@ public class EmailServiceImpl implements EmailService {
     public void sendVerificationEmail(String receiveEmail, String token) {
         try {
             MimeMessage mimeMessage = emailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, HTML_ENCODING);
 
             helper.setFrom(sourceEmail);
             helper.setTo(receiveEmail);
@@ -97,10 +100,43 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendInterviewInvitationEmail(Location location, OffsetDateTime scheduledAt, String fullName, String candidateEmail) {
-        try{
+    @Async
+    public void sendCompanyVerificationResult(String receiveEmail, boolean isApproved, @Nullable String reason) {
+        try {
             MimeMessage mimeMessage = emailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, HTML_ENCODING);
+
+            helper.setFrom(sourceEmail);
+            helper.setTo(receiveEmail);
+
+            String subject;
+            String htmlContent;
+
+            if (isApproved) {
+                subject = "Xác thực công ty - Thành công";
+                htmlContent = loadTemplate("company-verification-success.html");
+            } else {
+                subject = "Xác thực công ty - Thất bại";
+                htmlContent = loadTemplate("company-verification-failure.html")
+                        .replace("{{reason}}", reason != null ? reason : "Không có lý do cụ thể.");
+            }
+
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            emailSender.send(mimeMessage);
+            log.info("Company verification result email sent to: {}", receiveEmail);
+        } catch (MessagingException e) {
+            log.error("Failed to send company verification result email to: {}", receiveEmail, e);
+            throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
+        }
+    }
+
+    public void sendInterviewInvitationEmail(Location location, OffsetDateTime scheduledAt, String fullName,
+            String candidateEmail) {
+        try {
+            MimeMessage mimeMessage = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, HTML_ENCODING);
 
             helper.setFrom(sourceEmail);
             helper.setTo(candidateEmail);

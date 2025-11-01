@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -29,13 +30,13 @@ public class Company {
 	@Column(name = "website")
 	private String website;
 
-    private String description;
+	private String description;
 
-    private String phone;
+	private String phone;
 
-    private String email;
+	private String email;
 
-    private String industry;
+	private String industry;
 
 	@Column(name = "size")
 	private String size;
@@ -51,6 +52,10 @@ public class Company {
 	@Column(name = "date_created")
 	private OffsetDateTime dateCreated;
 
+	@UpdateTimestamp
+	@Column(name = "date_updated")
+	private OffsetDateTime dateUpdated;
+
 	@OneToOne(mappedBy = "company")
 	@JsonIgnore
 	private Recruiter recruiter;
@@ -58,4 +63,8 @@ public class Company {
 	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Builder.Default
 	private Set<CompanyLocation> companyLocations = new HashSet<>();
+
+	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
+	private Set<AttestationResource> attestations = new HashSet<>();
 }

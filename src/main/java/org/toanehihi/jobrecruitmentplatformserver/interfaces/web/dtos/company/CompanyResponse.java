@@ -3,8 +3,6 @@ package org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.Recruiter;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Builder;

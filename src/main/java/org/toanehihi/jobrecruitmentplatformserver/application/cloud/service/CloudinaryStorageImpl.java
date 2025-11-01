@@ -17,7 +17,6 @@ import com.cloudinary.utils.ObjectUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.Resource;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.FileData;
 
 @Service
@@ -103,6 +102,7 @@ public class CloudinaryStorageImpl implements CloudStorageService {
         return "raw";
     }
 
-    public record CloudinaryFileInfo(String url, String publicId, String mimeType, String contentType, String fileName) {
+    public record CloudinaryFileInfo(String url, String publicId, String mimeType, String contentType,
+            String fileName) {
     }
 }

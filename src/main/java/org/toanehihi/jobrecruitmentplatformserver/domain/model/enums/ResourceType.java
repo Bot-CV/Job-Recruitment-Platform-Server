@@ -1,10 +1,9 @@
 package org.toanehihi.jobrecruitmentplatformserver.domain.model.enums;
 
 public enum ResourceType {
-	AVATAR,
-	CV,
+    AVATAR,
+    CV,
     COMPANY_LOGO,
-    JOB_ATTACHMENT
+    JOB_ATTACHMENT,
+    ATTESTATION
 }
-
-

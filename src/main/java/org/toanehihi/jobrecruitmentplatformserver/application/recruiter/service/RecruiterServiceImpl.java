@@ -82,12 +82,6 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
 
     @Override
-    public CompanyResponse getCompany(Long companyId) {
-        Company company = companyRepository.findById(companyId).orElseThrow(() -> new AppException(ErrorCode.RECRUITER_COMPANY_NOT_FOUND));
-        return companyMapper.toResponse(company);
-    }
-
-    @Override
     @Transactional
     public CompanyResponse updateCompany(CompanyRequest request) {
         Recruiter recruiter = getCurrentRecruiter();
@@ -159,7 +153,6 @@ public class RecruiterServiceImpl implements RecruiterService {
 
         log.info(String.valueOf(jobs.getSize()));
 
-
         return jobs.map(jobMapper::toResponse);
     }
 
@@ -196,11 +189,11 @@ public class RecruiterServiceImpl implements RecruiterService {
         Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
 
-        if(!jobApplication.getJob().getCompany().getId().equals(recruiter.getCompany().getId())) {
+        if (!jobApplication.getJob().getCompany().getId().equals(recruiter.getCompany().getId())) {
             throw new AppException(ErrorCode.RECRUITER_UNAUTHORIZED_ACCESS_JOB_APPLICANTS);
         }
 
-        if(jobApplication.getStatus().equals(ApplicationStatus.REJECTED)) {
+        if (jobApplication.getStatus().equals(ApplicationStatus.REJECTED)) {
             throw new AppException(ErrorCode.JOB_ALREADY_PROCESSED);
         }
 

@@ -127,7 +127,8 @@ CREATE TABLE
         industry VARCHAR(100),
         logo_resource_id BIGINT,
         verified BOOLEAN NOT NULL DEFAULT FALSE,
-        date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW ()
+        date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
+        date_updated TIMESTAMPTZ (3) NOT NULL DEFAULT NOW ()
     );
 
 CREATE INDEX idx_companies_name ON companies (name);
@@ -418,6 +419,18 @@ CREATE TABLE
 
 CREATE INDEX idx_resources_uploaded_at ON resources (uploaded_at DESC);
 
+CREATE TABLE
+    attestation_resources (
+        company_id BIGINT NOT NULL,
+        resource_id BIGINT NOT NULL UNIQUE,
+        PRIMARY KEY (company_id, resource_id),
+        CONSTRAINT fk_attestation_resources_company FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
+        CONSTRAINT fk_attestation_resources_resource FOREIGN KEY (resource_id) REFERENCES resources (id) ON DELETE CASCADE
+    );
+
+-- =====================================================
+-- ANATYTICS TABLES
+-- =====================================================
 CREATE TABLE
     analytics (
         id BIGSERIAL PRIMARY KEY,
