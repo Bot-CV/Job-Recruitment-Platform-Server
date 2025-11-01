@@ -1,15 +1,14 @@
 package org.toanehihi.jobrecruitmentplatformserver.interfaces.web.controllers.resource;
 
 import org.checkerframework.checker.units.qual.Current;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudStorageService;
 import org.toanehihi.jobrecruitmentplatformserver.application.resource.ResourceService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.annotation.CurrentUser;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.FileData;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
 
 @RestController
@@ -17,9 +16,11 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.R
 public class ResourceController {
 
     private final ResourceService resourceService;
+    private final CloudStorageService cloudStorageService;
 
-    public ResourceController(ResourceService resourceService) {
+    public ResourceController(ResourceService resourceService, CloudStorageService cloudStorageService) {
         this.resourceService = resourceService;
+        this.cloudStorageService = cloudStorageService;
     }
 
     @PostMapping("/upload/avatar")
@@ -35,5 +36,10 @@ public class ResourceController {
                 .build();
     }
 
-
+    @GetMapping("/download")
+    public DataResponse<FileData> downloadResource(@RequestParam(value = "url") String resourceUrl) {
+        return DataResponse.<FileData>builder()
+                .data(cloudStorageService.downloadFile(resourceUrl))
+                .build();
+    }
 }

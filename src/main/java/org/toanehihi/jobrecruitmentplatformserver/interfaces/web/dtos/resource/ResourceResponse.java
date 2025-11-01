@@ -16,6 +16,7 @@ public class ResourceResponse {
     private Long id;
     private String mimeType;
     private ResourceType resourceType;
+    private String contentType;
     private String url;
     private String publicId;
     private String name;

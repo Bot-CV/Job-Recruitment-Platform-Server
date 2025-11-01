@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -51,6 +52,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.skill.Cand
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CandidateServiceImpl implements CandidateService {
@@ -173,7 +175,7 @@ public class CandidateServiceImpl implements CandidateService {
 //    }
 
     @Override
-    @Transactional
+    @Transactional(rollbackOn = Exception.class)
     public JobApplicationResponse applyJob(Long jobId, MultipartFile cv) {
         Candidate candidate = getCurrentCandidate();
 
@@ -183,12 +185,12 @@ public class CandidateServiceImpl implements CandidateService {
         Resource resource = Resource.builder()
                 .mimeType(fileInfo.mimeType())
                 .resourceType(ResourceType.CV)
+                .contentType(fileInfo.contentType())
                 .url(fileInfo.url())
                 .publicId(fileInfo.publicId())
                 .name(fileInfo.fileName())
                 .build();
         Resource savedResource = resourceRepository.save(resource);
-
         JobApplication jobApplication = JobApplication.builder()
                 .candidate(candidate)
                 .job(job)

@@ -54,6 +54,13 @@ CREATE TYPE event_type AS ENUM (
     'JOB_SAVED'
 );
 
+CREATE TYPE interview_status AS ENUM (
+    'SCHEDULED',
+    'COMPLETED',
+    'CANCELED',
+    'NO_SHOW'
+);
+
 -- =====================================================
 -- CORE TABLES
 -- =====================================================
@@ -363,6 +370,20 @@ CREATE INDEX idx_job_applications_status ON job_applications (status);
 CREATE INDEX idx_job_applications_applied_at ON job_applications (applied_at DESC);
 
 CREATE TABLE
+    interviews (
+        id BIGSERIAL PRIMARY KEY,
+        application_id BIGINT NOT NULL,
+        scheduled_at TIMESTAMPTZ (3) NOT NULL,
+        location_id BIGINT NOT NULL,
+        status interview_status NOT NULL DEFAULT 'SCHEDULED',
+        date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
+        date_updated TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
+        notes TEXT,
+        CONSTRAINT fk_interviews_application FOREIGN KEY (application_id) REFERENCES job_applications (id) ON DELETE CASCADE,
+        CONSTRAINT fk_interviews_location FOREIGN KEY (location_id) REFERENCES locations (id)
+    );
+
+CREATE TABLE
     saved_jobs (
         id BIGSERIAL PRIMARY KEY,
         candidate_id BIGINT NOT NULL,
@@ -387,6 +408,7 @@ CREATE TABLE
         id BIGSERIAL PRIMARY KEY,
         owner_id BIGINT,
         mime_type TEXT NOT NULL,
+        content_type TEXT NOT NULL,
         resource_type resource_type NOT NULL,
         url TEXT NOT NULL,
         public_id VARCHAR(255) NOT NULL UNIQUE,
@@ -406,3 +428,4 @@ CREATE TABLE
         occurred_at TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
         CONSTRAINT fk_analytics_events_account FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE SET NULL
     );
+

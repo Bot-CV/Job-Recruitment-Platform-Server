@@ -3,6 +3,7 @@ package org.toanehihi.jobrecruitmentplatformserver.application.email.service;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.OffsetDateTime;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -17,6 +18,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.Location;
 
 @Service
 @RequiredArgsConstructor
@@ -90,4 +92,34 @@ public class EmailServiceImpl implements EmailService {
             throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
         }
     }
+
+    @Override
+    public void sendInterviewInvitationEmail(Location location, OffsetDateTime scheduledAt, String fullName, String candidateEmail) {
+        try{
+            MimeMessage mimeMessage = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setFrom(sourceEmail);
+            helper.setTo(candidateEmail);
+            helper.setSubject("Thư mời phỏng vấn - Bot-CV");
+
+            String htmlContent = loadTemplate("interview-invitation.html")
+                    .replace("{{fullName}}", fullName)
+                    .replace("{{scheduledAt}}", scheduledAt.toString())
+                    .replace("{{streetAddress}}", location.getStreetAddress())
+                    .replace("{{ward}}", location.getWard())
+                    .replace("{{district}}", location.getDistrict())
+                    .replace("{{provinceCity}}", location.getProvinceCity())
+                    .replace("{{country}}", location.getCountry());
+
+            helper.setText(htmlContent, true);
+
+            emailSender.send(mimeMessage);
+            log.info("Interview invitation email sent successfully to: {}", candidateEmail);
+        } catch (MessagingException e) {
+            log.error("Failed to send interview invitation email to: {}", candidateEmail, e);
+            throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
+        }
+    }
+
 }

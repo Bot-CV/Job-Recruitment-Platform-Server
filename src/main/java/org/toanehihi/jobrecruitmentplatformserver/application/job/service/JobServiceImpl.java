@@ -239,6 +239,7 @@ public class JobServiceImpl implements JobService {
             throw new AppException(ErrorCode.JOB_CLOSED_CANNOT_UPDATE);
         }
         job.setStatus(JobStatus.CANCELED);
+        log.info(job.getStatus().toString());
         return jobMapper.toResponse(jobRepository.save(job));
     }
 

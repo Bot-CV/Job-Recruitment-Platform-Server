@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
@@ -16,6 +17,8 @@ import com.cloudinary.utils.ObjectUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.Resource;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.FileData;
 
 @Service
 @RequiredArgsConstructor
@@ -57,11 +60,25 @@ public class CloudinaryStorageImpl implements CloudStorageService {
             String secureUrl = (String) uploadResult.get("secure_url");
             String uploadedPublicId = (String) uploadResult.get("public_id");
 
-            return new CloudinaryFileInfo(secureUrl, uploadedPublicId, resourceType, originalFileName);
+            return new CloudinaryFileInfo(secureUrl, uploadedPublicId, resourceType, contentType, originalFileName);
         } catch (IOException e) {
             log.error("Failed to upload file: {}", e.getMessage());
             throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
         }
+    }
+
+    @Override
+    public FileData downloadFile(String resourceUrl) {
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            byte[] fileBytes = restTemplate.getForObject(resourceUrl, byte[].class);
+            if (fileBytes != null) {
+                return new FileData(fileBytes);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to download file from {}: {}", resourceUrl, e.getMessage(), e);
+        }
+        throw new AppException(ErrorCode.RESOURCE_DOWNLOAD_FAILED);
     }
 
     @Override
@@ -86,6 +103,6 @@ public class CloudinaryStorageImpl implements CloudStorageService {
         return "raw";
     }
 
-    public record CloudinaryFileInfo(String url, String publicId, String mimeType, String fileName) {
+    public record CloudinaryFileInfo(String url, String publicId, String mimeType, String contentType, String fileName) {
     }
 }

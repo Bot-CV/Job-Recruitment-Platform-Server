@@ -24,6 +24,8 @@ public class Resource {
 	@Column(name = "mime_type", nullable = false)
 	private String mimeType;
 
+    private String contentType;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "resource_type", nullable = false)
 	private ResourceType resourceType;

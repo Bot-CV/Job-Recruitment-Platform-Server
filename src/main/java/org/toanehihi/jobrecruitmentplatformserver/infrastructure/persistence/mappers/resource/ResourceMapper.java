@@ -11,6 +11,7 @@ public class ResourceMapper {
                 .id(resource.getId())
                 .mimeType(resource.getMimeType())
                 .resourceType(resource.getResourceType())
+                .contentType(resource.getContentType())
                 .url(resource.getUrl())
                 .publicId(resource.getPublicId())
                 .name(resource.getName())

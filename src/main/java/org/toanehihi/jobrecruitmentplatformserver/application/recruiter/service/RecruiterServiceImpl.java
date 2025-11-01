@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudStorageService;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudinaryStorageImpl.CloudinaryFileInfo;
+import org.toanehihi.jobrecruitmentplatformserver.application.email.service.EmailService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.*;
@@ -20,6 +21,7 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.Application
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.JobStatus;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ResourceType;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.company.CompanyMapper;
+import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.interview.InterviewMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.JobApplicationMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.JobMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.recruiter.RecruiterMapper;
@@ -29,6 +31,9 @@ import org.toanehihi.jobrecruitmentplatformserver.infrastructure.security.Curren
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.CompanyLocationRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.CompanyRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.CompanyResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.interview.CreateInterviewRequest;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.interview.InterviewResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.interview.UpdateInterviewRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.JobResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicantResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.recruiter.RecruiterRequest;
@@ -56,6 +61,9 @@ public class RecruiterServiceImpl implements RecruiterService {
     private final JobMapper jobMapper;
     private final JobApplicationRepository jobApplicationRepository;
     private final JobApplicationMapper jobApplicationMapper;
+    private final InterviewMapper interviewMapper;
+    private final InterviewRepository interviewRepository;
+    private final EmailService emailService;
 
     @Override
     public RecruiterResponse getProfile() {
@@ -148,9 +156,7 @@ public class RecruiterServiceImpl implements RecruiterService {
                 JobStatus.valueOf(jobStatus), pageable);
 
         log.info(String.valueOf(jobs.getSize()));
-        if (jobs.isEmpty()) {
-            throw new AppException(ErrorCode.JOB_NOT_FOUND);
-        }
+
 
         return jobs.map(jobMapper::toResponse);
     }
@@ -197,13 +203,53 @@ public class RecruiterServiceImpl implements RecruiterService {
             throw new AppException(ErrorCode.RECRUITER_UNAUTHORIZED_ACCESS_JOB_APPLICANTS);
         }
 
-        if(!jobApplication.getStatus().equals(ApplicationStatus.SUBMITTED)) {
+        if(jobApplication.getStatus().equals(ApplicationStatus.REJECTED)) {
             throw new AppException(ErrorCode.JOB_ALREADY_PROCESSED);
         }
 
         jobApplication.setStatus(ApplicationStatus.valueOf(action));
 
         return jobApplicationMapper.toApplicantResponse(jobApplicationRepository.save(jobApplication));
+    }
+
+    @Override
+    public InterviewResponse scheduleInterview(Account account, CreateInterviewRequest request) {
+        Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
+
+        JobApplication jobApplication = jobApplicationRepository.findById(request.getApplicationId())
+                .orElseThrow(() -> new AppException(ErrorCode.JOB_APPLICATION_NOT_FOUND));
+
+        if (!jobApplication.getJob().getCompany().getId().equals(recruiter.getCompany().getId())) {
+            throw new AppException(ErrorCode.RECRUITER_UNAUTHORIZED_ACCESS_JOB_APPLICANTS);
+        }
+
+        Interview interview = interviewRepository.save(interviewMapper.toEntity(request));
+
+        emailService.sendInterviewInvitationEmail(
+                interview.getLocation(),
+                interview.getScheduledAt(),
+                jobApplication.getCandidate().getFullName(),
+                jobApplication.getCandidate().getAccount().getEmail());
+
+        return interviewMapper.toResponse(interview);
+    }
+
+    @Override
+    public InterviewResponse updateInterview(Account account, UpdateInterviewRequest request) {
+        Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
+
+        Interview interview = interviewRepository.findById(request.getInterviewId())
+                .orElseThrow(() -> new AppException(ErrorCode.INTERVIEW_NOT_FOUND));
+
+        if (!(interview.getJobApplication().getJob().getCompany().getId().equals(recruiter.getCompany().getId()))) {
+            throw new AppException(ErrorCode.RECRUITER_UNAUTHORIZED_ACCESS_INTERVIEW);
+        }
+        interview.setScheduledAt(request.getScheduledAt());
+        interview.setNotes(request.getNotes());
+        interview.setStatus(request.getStatus());
+        return interviewMapper.toResponse(interviewRepository.save(interview));
     }
 
     // Private methods

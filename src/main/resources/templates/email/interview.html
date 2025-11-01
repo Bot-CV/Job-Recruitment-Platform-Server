@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thư Mời Phỏng Vấn</title>
+    <style>
+        body {
+            font-family: Arial, 'Segoe UI', Tahoma, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .email-wrapper {
+            max-width: 650px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+        }
+        .email-header {
+            background-color: #00b14f;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        .email-header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .email-body {
+            padding: 35px 40px;
+        }
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #333333;
+        }
+        .content-text {
+            font-size: 15px;
+            color: #555555;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        .info-section {
+            background-color: #f9f9f9;
+            border-left: 3px solid #00b14f;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .info-section h3 {
+            color: #00b14f;
+            font-size: 17px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .info-label {
+            font-weight: 600;
+            min-width: 140px;
+            color: #333333;
+        }
+        .info-value {
+            color: #555555;
+        }
+        .highlight-box {
+            background-color: #fffbe6;
+            border: 1px solid #ffd700;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            border-radius: 4px;
+        }
+        .highlight-box .label {
+            font-size: 13px;
+            color: #666666;
+            margin-bottom: 5px;
+        }
+        .highlight-box .value {
+            font-size: 17px;
+            font-weight: 600;
+            color: #d48806;
+        }
+        .section-title {
+            color: #333333;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 25px;
+            margin-bottom: 12px;
+        }
+        .list-items {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        .list-items li {
+            margin-bottom: 8px;
+            color: #555555;
+            font-size: 14px;
+        }
+        .closing {
+            margin-top: 30px;
+            font-size: 15px;
+            color: #333333;
+        }
+        .signature {
+            margin-top: 25px;
+            font-size: 15px;
+            color: #333333;
+        }
+        .signature strong {
+            color: #00b14f;
+        }
+        .email-footer {
+            background-color: #f5f5f5;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+        }
+        .email-footer p {
+            margin: 5px 0;
+            font-size: 13px;
+            color: #888888;
+        }
+        .divider {
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 25px 0;
+        }
+        @media only screen and (max-width: 600px) {
+            .email-wrapper {
+                margin: 0;
+                border: none;
+            }
+            .email-body {
+                padding: 25px 20px;
+            }
+            .info-row {
+                flex-direction: column;
+            }
+            .info-label {
+                margin-bottom: 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="email-wrapper">
+    <!-- Header -->
+    <div class="email-header">
+        <h1>THƯ MỜI PHỎNG VẤN</h1>
+    </div>
+
+    <!-- Body -->
+    <div class="email-body">
+        <!-- Greeting -->
+        <div class="greeting">
+            Kính gửi <strong>${fullName}</strong>,
+        </div>
+
+        <!-- Opening -->
+        <p class="content-text">
+            Công ty chúng tôi xin chân thành cảm ơn bạn đã quan tâm và gửi hồ sơ ứng tuyển. Sau khi xem xét kỹ lưỡng, chúng tôi rất vui mừng thông báo rằng hồ sơ của bạn đã được chọn vào vòng phỏng vấn.
+        </p>
+
+        <p class="content-text">
+            Chúng tôi ấn tượng với kinh nghiệm và trình độ chuyên môn của bạn, và rất mong được gặp gỡ để trao đổi chi tiết hơn về cơ hội hợp tác.
+        </p>
+
+        <!-- Interview Time -->
+        <div class="highlight-box">
+            <div class="label">Thời gian phỏng vấn</div>
+            <div class="value">${scheduledAt}</div>
+        </div>
+
+        <!-- Location Information -->
+        <div class="info-section">
+            <h3>📍 Địa điểm phỏng vấn</h3>
+            <div class="info-row">
+                <div class="info-label">Địa chỉ:</div>
+                <div class="info-value">${streetAddress}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Phường/Xã:</div>
+                <div class="info-value">${ward}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Quận/Huyện:</div>
+                <div class="info-value">${district}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Tỉnh/Thành phố:</div>
+                <div class="info-value">${provinceCity}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Quốc gia:</div>
+                <div class="info-value">${country}</div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Documents to Bring -->
+        <div class="section-title">Tài liệu cần mang theo:</div>
+        <ul class="list-items">
+            <li>Sơ yếu lý lịch và CV cập nhật</li>
+            <li>Giấy tờ tùy thân (CMND/CCCD)</li>
+            <li>Bằng cấp, chứng chỉ liên quan (bản sao)</li>
+            <li>Portfolio hoặc các sản phẩm đã thực hiện (nếu có)</li>
+        </ul>
+
+        <!-- Duration -->
+        <div class="section-title">Thời gian dự kiến:</div>
+        <p class="content-text">
+            Buổi phỏng vấn dự kiến kéo dài khoảng 45-60 phút.
+        </p>
+
+        <!-- Closing -->
+        <div class="closing">
+            <p style="margin-bottom: 15px;">
+                Chúng tôi rất mong được gặp bạn và tìm hiểu thêm về năng lực cũng như sự phù hợp của bạn với vị trí này.
+            </p>
+        </div>
+
+        <!-- Signature -->
+        <div class="signature">
+            <p>Trân trọng,</p>
+            <p><strong>Phòng Nhân Sự</strong></p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="email-footer">
+        <p>Email này được gửi tự động, vui lòng không trả lời trực tiếp.</p>
+        <p>© 2025 BotCV. All right reserved.</p>
+    </div>
+</div>
+</body>
+</html>

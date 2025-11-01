@@ -43,7 +43,7 @@ public class JobController {
                 .build();
     }
 
-    @PatchMapping("/{jobId}")
+    @PatchMapping("/cancel/{jobId}")
     public DataResponse<JobResponse> cancelJob(@CurrentUser Account account, @PathVariable Long jobId){
         return DataResponse.<JobResponse>builder()
                 .data(jobService.cancelJob(account, jobId))
