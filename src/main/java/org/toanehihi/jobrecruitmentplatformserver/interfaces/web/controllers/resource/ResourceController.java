@@ -19,36 +19,37 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ResourceController {
 
-    private final ResourceService resourceService;
-    private final CloudStorageService cloudStorageService;
+	private final ResourceService resourceService;
+	private final CloudStorageService cloudStorageService;
 
-    @PostMapping("/upload/avatar")
-    public DataResponse<ResourceResponse> updateAvatar(@CurrentUser Account account,
-            @RequestParam("file") MultipartFile file) {
-        return DataResponse.<ResourceResponse>builder()
-                .data(resourceService.updateUserAvatar(account, file))
-                .build();
-    }
+	@PostMapping("/upload/avatar")
+	public DataResponse<ResourceResponse> updateAvatar(@CurrentUser Account account,
+			@RequestParam("file") MultipartFile file) {
+		return DataResponse.<ResourceResponse>builder()
+				.data(resourceService.updateUserAvatar(account, file))
+				.build();
+	}
 
-    @PostMapping("/upload/company-logo")
-    public DataResponse<ResourceResponse> updateCompanyLogo(@CurrentUser Account account,
-            @RequestParam("file") MultipartFile file) {
-        return DataResponse.<ResourceResponse>builder()
-                .data(resourceService.updateCompanyLogo(account, file))
-                .build();
-    }
+	@PostMapping("/upload/company-logo")
+	public DataResponse<ResourceResponse> updateCompanyLogo(@CurrentUser Account account,
+			@RequestParam("file") MultipartFile file) {
+		return DataResponse.<ResourceResponse>builder()
+				.data(resourceService.updateCompanyLogo(account, file))
+				.build();
+	}
 
-    @GetMapping("/download")
-    public DataResponse<FileData> downloadResource(@RequestParam(value = "url") String resourceUrl) {
-        return DataResponse.<FileData>builder()
-                .data(cloudStorageService.downloadFile(resourceUrl))
-                .build();
-    }
+	@GetMapping("/download")
+	public DataResponse<FileData> downloadResource(@RequestParam(value = "url") String resourceUrl) {
+		return DataResponse.<FileData>builder()
+				.data(cloudStorageService.downloadFile(resourceUrl))
+				.build();
+	}
 
-    @PutMapping("/company/attestations")
-    DataResponse<List<ResourceResponse>> uploadAttestation(@CurrentUser Account account, List<MultipartFile> files) {
-        return DataResponse.<List<ResourceResponse>>builder()
-                .data(resourceService.uploadAttestation(account, files))
-                .build();
-    }
+	@PostMapping("/company/attestations")
+	DataResponse<List<ResourceResponse>> uploadAttestation(@CurrentUser Account account,
+			@RequestParam("files") List<MultipartFile> files) {
+		return DataResponse.<List<ResourceResponse>>builder()
+				.data(resourceService.uploadAttestation(account, files))
+				.build();
+	}
 }

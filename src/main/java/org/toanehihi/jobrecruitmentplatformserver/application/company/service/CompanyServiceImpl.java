@@ -18,8 +18,6 @@ import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.map
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.resource.ResourceMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.AttestationResourceRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.CompanyRepository;
-import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.RecruiterRepository;
-import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.ResourceRepository;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.annotation.HasAdminRole;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.CompanyResponse;
@@ -33,9 +31,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class CompanyServiceImpl implements CompanyService {
-
-    private final RecruiterRepository recruiterRepository;
-    private final ResourceRepository resourceRepository;
     private final CompanyRepository companyRepository;
     private final AttestationResourceRepository attestationResourceRepository;
     private final ResourceMapper resourceMapper;
@@ -59,19 +54,19 @@ public class CompanyServiceImpl implements CompanyService {
             for (AttestationResource attestation : attesations) {
                 Resource resource = attestation.getResource();
                 cloudStorageService.deleteFile(resource.getPublicId());
-                resourceRepository.delete(resource);
             }
-            emailService.sendCompanyVerificationResult(company.getRecruiter().getAccount().getEmail(),
-                    request.isApproved(), null);
-        } else {
+            company.getAttestations().clear();
             emailService.sendCompanyVerificationResult(company.getRecruiter().getAccount().getEmail(),
                     request.isApproved(), request.getReason());
+        } else {
+            emailService.sendCompanyVerificationResult(company.getRecruiter().getAccount().getEmail(),
+                    request.isApproved(), null);
         }
         company.setVerified(request.isApproved());
         Company savedCompany = companyRepository.save(company);
         return VerifyCompanyResponse.builder()
                 .companyId(savedCompany.getId())
-                .isApproved(request.isApproved())
+                .approved(request.isApproved())
                 .reason(request.getReason())
                 .build();
     }

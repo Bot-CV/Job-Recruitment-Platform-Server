@@ -46,7 +46,6 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicationResponse;
-import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.skill.CandidateSkillRequest;
 
 import jakarta.transaction.Transactional;
@@ -67,7 +66,6 @@ public class CandidateServiceImpl implements CandidateService {
     private final LocationMapper locationMapper;
     private final CandidateMapper candidateMapper;
     private final SavedJobMapper savedJobMapper;
-    private final ResourceMapper resourceMapper;
     private final JobApplicationMapper jobApplicationMapper;
     private final CurrentAccountProvider currentAccountProvider;
     private final CloudStorageService cloudStorageService;
@@ -137,7 +135,7 @@ public class CandidateServiceImpl implements CandidateService {
                 .savedAt(OffsetDateTime.now())
                 .build();
         SavedJob result = savedJobRepository.save(savedJob);
-//        analyticService.trackJobSaved(candidate.getAccount().getId(), job.getId());
+        // analyticService.trackJobSaved(candidate.getAccount().getId(), job.getId());
         return savedJobMapper.toResponse(result);
     }
 
@@ -148,31 +146,6 @@ public class CandidateServiceImpl implements CandidateService {
         Job job = jobRepository.findById(jobId).orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
         savedJobRepository.deleteByCandidateAndJob(candidate, job);
     }
-
-//    @Override
-//    @Transactional
-//    public ResourceResponse updateAvatar(MultipartFile avatar) {
-//        Candidate candidate = getCurrentCandidate();
-//        Optional<Resource> currentAvt = resourceRepository.findById(candidate.getAvatarResourceId());
-//        if (currentAvt.isPresent()) {
-//            resourceRepository.delete(currentAvt.get());
-//            cloudStorageService.deleteFile(currentAvt.get().getPublicId());
-//        }
-//        CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(avatar, "avatar");
-//        Resource resource = Resource.builder()
-//                .mimeType(fileInfo.mimeType())
-//                .resourceType(ResourceType.AVATAR)
-//                .url(fileInfo.url())
-//                .publicId(fileInfo.publicId())
-//                .name(fileInfo.fileName())
-//                .build();
-//        Resource savedResource = resourceRepository.save(resource);
-//
-//        candidate.setAvatarResourceId(savedResource.getId());
-//        candidate.setDateUpdated(OffsetDateTime.now());
-//        candidateRepository.save(candidate);
-//        return resourceMapper.toResponse(savedResource);
-//    }
 
     @Override
     @Transactional(rollbackOn = Exception.class)
@@ -200,7 +173,7 @@ public class CandidateServiceImpl implements CandidateService {
 
         JobApplication savedJobApplication = jobApplicationRepository.save(jobApplication);
 
-//        analyticService.trackJobApplied(candidate.getAccount().getId(), job.getId());
+        // analyticService.trackJobApplied(candidate.getAccount().getId(), job.getId());
         return jobApplicationMapper.toResponse(savedJobApplication);
     }
 

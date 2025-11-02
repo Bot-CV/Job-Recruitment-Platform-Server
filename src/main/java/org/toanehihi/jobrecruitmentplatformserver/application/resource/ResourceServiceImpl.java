@@ -11,6 +11,7 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.*;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ResourceType;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.resource.ResourceMapper;
+import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.AttestationResourceRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.CandidateRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.CompanyRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.RecruiterRepository;
@@ -25,7 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.LongConsumer;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +34,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final RecruiterRepository recruiterRepository;
     private final CandidateRepository candidateRepository;
     private final ResourceRepository resourceRepository;
+    private final AttestationResourceRepository attestationResourceRepository;
     private final CloudStorageService cloudStorageService;
     private final ResourceMapper resourceMapper;
     private final CompanyRepository companyRepository;
@@ -73,7 +75,7 @@ public class ResourceServiceImpl implements ResourceService {
     private ResourceResponse updateAvatar(
             Long currentAvatarId,
             MultipartFile avatar,
-            Consumer<Long> updateEntity) {
+            LongConsumer updateEntity) {
 
         // Delete existing avatar if present
         Optional<Resource> currentAvatar = resourceRepository
@@ -89,6 +91,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         Resource resource = Resource.builder()
                 .mimeType(fileInfo.mimeType())
+                .contentType(fileInfo.contentType())
                 .resourceType(ResourceType.AVATAR)
                 .contentType(fileInfo.contentType())
                 .url(fileInfo.url())
@@ -124,6 +127,7 @@ public class ResourceServiceImpl implements ResourceService {
         CloudinaryStorageImpl.CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(logo, "company_logo");
         Resource resource = Resource.builder()
                 .mimeType(fileInfo.mimeType())
+                .contentType(fileInfo.contentType())
                 .resourceType(ResourceType.COMPANY_LOGO)
                 .url(fileInfo.url())
                 .publicId(fileInfo.publicId())
@@ -154,12 +158,17 @@ public class ResourceServiceImpl implements ResourceService {
         if (recruiter.getCompany().isVerified()) {
             throw new AppException(ErrorCode.COMPANY_HAS_BEEN_VERIFIED);
         }
+
+        if (attestationResourceRepository.existsByCompany(recruiter.getCompany())) {
+            throw new AppException(ErrorCode.RESOURCE_ATTESTATION_HAS_BEEN_SENT);
+        }
         Company company = recruiter.getCompany();
         Set<AttestationResource> attestations = new HashSet<>();
         for (MultipartFile file : files) {
             CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(file, "attestation");
             Resource resource = Resource.builder()
                     .mimeType(fileInfo.mimeType())
+                    .contentType(fileInfo.contentType())
                     .resourceType(ResourceType.ATTESTATION)
                     .url(fileInfo.url())
                     .publicId(fileInfo.publicId())
@@ -172,7 +181,7 @@ public class ResourceServiceImpl implements ResourceService {
                     .build();
             attestations.add(attestation);
         }
-        company.setAttestations(attestations);
+        company.getAttestations().addAll(attestations);
         companyRepository.save(company);
         return attestations.stream()
                 .map(attestation -> resourceMapper.toResponse(attestation.getResource()))

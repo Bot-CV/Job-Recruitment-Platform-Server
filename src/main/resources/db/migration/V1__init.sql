@@ -45,7 +45,13 @@ CREATE TYPE application_status AS ENUM (
     'REJECTED'
 );
 
-CREATE TYPE resource_type AS ENUM ('AVATAR', 'CV', 'COMPANY_LOGO', 'JOB_ATTACHMENT');
+CREATE TYPE resource_type AS ENUM (
+    'AVATAR',
+    'CV',
+    'COMPANY_LOGO',
+    'JOB_ATTACHMENT',
+    'ATTESTATION'
+);
 
 CREATE TYPE event_type AS ENUM (
     'SEARCH_QUERY',
@@ -54,12 +60,7 @@ CREATE TYPE event_type AS ENUM (
     'JOB_SAVED'
 );
 
-CREATE TYPE interview_status AS ENUM (
-    'SCHEDULED',
-    'COMPLETED',
-    'CANCELED',
-    'NO_SHOW'
-);
+CREATE TYPE interview_status AS ENUM ('SCHEDULED', 'COMPLETED', 'CANCELED', 'NO_SHOW');
 
 CREATE TYPE outbox_status AS ENUM ('PENDING','SENT','FAILED','DLQ');
 -- =====================================================
@@ -456,4 +457,3 @@ CREATE TABLE outbox_events (
 );
 CREATE INDEX idx_outbox_pending ON outbox_events (status, occurred_at);
 CREATE INDEX idx_outbox_agg ON outbox_events (aggregate_type, aggregate_id);
-

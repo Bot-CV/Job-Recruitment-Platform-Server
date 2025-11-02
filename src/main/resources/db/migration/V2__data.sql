@@ -46,9 +46,8 @@ WHERE
 -- ========================================
 -- INIT ADMIN ACCOUNT
 -- ========================================
--- Giả sử mật khẩu là 'admin123'
--- Hash ví dụ bằng BCrypt: $2a$10$7QpK/YL1jYVbF1B0L1N7XOHv84s8Ngh3T.bHDP0cZ1vZTqg2rTduK
--- (Bạn có thể thay lại bằng hash thật của bạn)
+-- Email: admin@botcv.com
+-- Password: Admin@123
 INSERT INTO
     accounts (
         email,
@@ -62,7 +61,7 @@ INSERT INTO
     )
 SELECT
     'admin@botcv.com',
-    '$2a$10$NfCbsSflss4JNAAzS.T0QOa5AvOoNm333IdIyZLlr3UlEr6179kom', -- Pass: Admin@123
+    '$2a$10$NfCbsSflss4JNAAzS.T0QOa5AvOoNm333IdIyZLlr3UlEr6179kom',
     r.id,
     'ACTIVE',
     'LOCAL',

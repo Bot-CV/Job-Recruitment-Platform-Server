@@ -19,8 +19,7 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
             FROM Company c
             LEFT JOIN AttestationResource ar ON ar.company = c
             WHERE c.verified = false
-            AND ar.id IS NULL
-            ORDER BY c.dateUpdated DESC
+            AND ar.id IS NOT NULL
             """)
     Page<Company> findAllUnverifiedCompanies(Pageable pageable);
 }

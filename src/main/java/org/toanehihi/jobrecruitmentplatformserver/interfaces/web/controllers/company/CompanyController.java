@@ -21,7 +21,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.R
 public class CompanyController {
     private final CompanyService companyService;
 
-    @GetMapping("/{companyId}")
+    @GetMapping("/public/{companyId}")
     DataResponse<CompanyResponse> getCompanyInfo(@PathVariable Long companyId) {
         return DataResponse.<CompanyResponse>builder()
                 .data(companyService.getCompanyInfo(companyId))
@@ -29,9 +29,12 @@ public class CompanyController {
     }
 
     @GetMapping("/verify")
-    DataResponse<PageResult<CompanyResponse>> getVerifyList(@CurrentUser Account account, int page, int size,
-            String sortBy,
-            String sortDir) {
+    DataResponse<PageResult<CompanyResponse>> getVerifyList(
+            @CurrentUser Account account,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "dateUpdated") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         return DataResponse.<PageResult<CompanyResponse>>builder()
                 .data(companyService.getVerifyList(account, page, size, sortBy, sortDir))
                 .build();

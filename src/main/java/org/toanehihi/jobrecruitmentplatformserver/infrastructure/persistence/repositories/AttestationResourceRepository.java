@@ -12,4 +12,5 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.ids.AttestationRe
 public interface AttestationResourceRepository extends JpaRepository<AttestationResource, AttestationResourceId> {
     List<AttestationResource> findByCompany(Company company);
 
+    boolean existsByCompany(Company company);
 }

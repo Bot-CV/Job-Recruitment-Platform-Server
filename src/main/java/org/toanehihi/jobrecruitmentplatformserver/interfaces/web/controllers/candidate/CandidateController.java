@@ -17,8 +17,6 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicationResponse;
-import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
-
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -56,13 +54,6 @@ public class CandidateController {
                 .data("Remove saved job successfully")
                 .build();
     }
-
-//    @PostMapping("/avatar")
-//    DataResponse<ResourceResponse> updateAvatar(@RequestParam("file") MultipartFile file) {
-//        return DataResponse.<ResourceResponse>builder()
-//                .data(candidateService.updateAvatar(file))
-//                .build();
-//    }
 
     @PostMapping("/applications/{jobId}")
     DataResponse<JobApplicationResponse> applyJob(@PathVariable Long jobId, @RequestParam("file") MultipartFile file) {

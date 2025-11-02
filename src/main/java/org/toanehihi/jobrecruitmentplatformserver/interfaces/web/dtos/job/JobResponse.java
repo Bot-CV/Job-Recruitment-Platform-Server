@@ -2,7 +2,6 @@ package org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job;
 
 import lombok.Builder;
 import lombok.Getter;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.Skill;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.JobStatus;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.SeniorityLevel;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.WorkMode;

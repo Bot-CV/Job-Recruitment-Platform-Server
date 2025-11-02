@@ -6,7 +6,6 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicationResponse;
-import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
 
 public interface CandidateService {
 
@@ -17,8 +16,6 @@ public interface CandidateService {
     SavedJobResponse saveJob(Long jobId);
 
     void removeSavedJob(Long jobId);
-
-//    ResourceResponse updateAvatar(MultipartFile avatar);
 
     JobApplicationResponse applyJob(Long jobId, MultipartFile cv);
 
