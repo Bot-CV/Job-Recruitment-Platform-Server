@@ -37,6 +37,7 @@ public class EmailServiceImpl implements EmailService {
     private String sourceEmail;
 
     private static final String HTML_ENCODING = "UTF-8";
+    private static final String TIME_ZONE = "Asia/Ho_Chi_Minh";
 
     private String loadTemplate(String templateName) {
         try {
@@ -85,7 +86,7 @@ public class EmailServiceImpl implements EmailService {
 
             String verificationUrl = frontendUrl + "/verify-email?token=" + token;
 
-            String htmlContent = loadTemplate("verification.html")
+            String htmlContent = loadTemplate("account-verification.html")
                     .replace("{{verificationUrl}}", verificationUrl)
                     .replace("{{receiveEmail}}", receiveEmail);
 
@@ -142,7 +143,7 @@ public class EmailServiceImpl implements EmailService {
             helper.setTo(candidateEmail);
             helper.setSubject("Thư mời phỏng vấn - Bot-CV");
 
-            ZonedDateTime hcmTime = scheduledAt.atZoneSameInstant(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+            ZonedDateTime hcmTime = scheduledAt.atZoneSameInstant(java.time.ZoneId.of(TIME_ZONE));
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
                     .withLocale(Locale.forLanguageTag("vi-VN"));
 
@@ -166,17 +167,18 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendInterviewUpdateEmail(Location location, OffsetDateTime oldScheduledAt, OffsetDateTime scheduledAt, String fullName, String candidateEmail) {
-        try{
+    public void sendInterviewUpdateEmail(Location location, OffsetDateTime oldScheduledAt, OffsetDateTime scheduledAt,
+            String fullName, String candidateEmail) {
+        try {
             MimeMessage mimeMessage = emailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, HTML_ENCODING);
 
             helper.setFrom(sourceEmail);
             helper.setTo(candidateEmail);
             helper.setSubject("Cập nhật lịch phỏng vấn - Bot-CV");
 
-            ZonedDateTime oldHcmTime = oldScheduledAt.atZoneSameInstant(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
-            ZonedDateTime newHcmTime = scheduledAt.atZoneSameInstant(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+            ZonedDateTime oldHcmTime = oldScheduledAt.atZoneSameInstant(java.time.ZoneId.of(TIME_ZONE));
+            ZonedDateTime newHcmTime = scheduledAt.atZoneSameInstant(java.time.ZoneId.of(TIME_ZONE));
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
                     .withLocale(Locale.forLanguageTag("vi-VN"));
@@ -194,7 +196,7 @@ public class EmailServiceImpl implements EmailService {
 
             emailSender.send(mimeMessage);
             log.info("Interview update email sent successfully to: {}", candidateEmail);
-        }catch (MessagingException e) {
+        } catch (MessagingException e) {
             log.error("Failed to send interview invitation email to: {}", candidateEmail, e);
             throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
         }
