@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public class VerifyCompanyRequest {
     private Long companyId;
-    private boolean isApproved;
+    private boolean approved;
 
     @Nullable
     private String reason;

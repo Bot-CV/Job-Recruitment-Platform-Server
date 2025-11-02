@@ -11,6 +11,7 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.*;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ResourceType;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.resource.ResourceMapper;
+import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.AttestationResourceRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.CandidateRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.CompanyRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.RecruiterRepository;
@@ -33,6 +34,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final RecruiterRepository recruiterRepository;
     private final CandidateRepository candidateRepository;
     private final ResourceRepository resourceRepository;
+    private final AttestationResourceRepository attestationResourceRepository;
     private final CloudStorageService cloudStorageService;
     private final ResourceMapper resourceMapper;
     private final CompanyRepository companyRepository;
@@ -154,6 +156,10 @@ public class ResourceServiceImpl implements ResourceService {
 
         if (recruiter.getCompany().isVerified()) {
             throw new AppException(ErrorCode.COMPANY_HAS_BEEN_VERIFIED);
+        }
+
+        if (attestationResourceRepository.existsByCompany(recruiter.getCompany())) {
+            throw new AppException(ErrorCode.RESOURCE_ATTESTATION_HAS_BEEN_SENT);
         }
         Company company = recruiter.getCompany();
         Set<AttestationResource> attestations = new HashSet<>();

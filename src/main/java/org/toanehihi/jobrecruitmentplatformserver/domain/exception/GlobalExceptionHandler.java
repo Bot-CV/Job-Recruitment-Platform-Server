@@ -18,15 +18,15 @@ import lombok.extern.slf4j.Slf4j;
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-    // @ExceptionHandler(value = RuntimeException.class)
-    // ResponseEntity<DataResponse<Void>> handlingRuntimeException(RuntimeException exception) {
-    //     return ResponseEntity
-    //             .badRequest()
-    //             .body(DataResponse.<Void>builder()
-    //                     .code(ErrorCode.SYSTEM_INTERNAL_ERROR.getCode())
-    //                     .message(ErrorCode.SYSTEM_INTERNAL_ERROR.getMessage())
-    //                     .build());
-    // }
+    @ExceptionHandler(value = RuntimeException.class)
+    ResponseEntity<DataResponse<Void>> handlingRuntimeException(RuntimeException exception) {
+        return ResponseEntity
+                .badRequest()
+                .body(DataResponse.<Void>builder()
+                        .code(ErrorCode.SYSTEM_INTERNAL_ERROR.getCode())
+                        .message(ErrorCode.SYSTEM_INTERNAL_ERROR.getMessage())
+                        .build());
+    }
 
     @ExceptionHandler(value = AppException.class)
     ResponseEntity<DataResponse<Void>> handlingAppException(AppException exception) {

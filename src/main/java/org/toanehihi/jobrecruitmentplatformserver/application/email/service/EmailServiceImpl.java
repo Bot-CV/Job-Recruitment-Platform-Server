@@ -42,7 +42,7 @@ public class EmailServiceImpl implements EmailService {
     private String loadTemplate(String templateName) {
         try {
             ClassPathResource resource = new ClassPathResource("templates/email/" + templateName);
-            return Files.readString(resource.getFile().toPath(), StandardCharsets.UTF_8);
+            return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             log.error("Failed to load email template: {}", templateName, e);
             throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
