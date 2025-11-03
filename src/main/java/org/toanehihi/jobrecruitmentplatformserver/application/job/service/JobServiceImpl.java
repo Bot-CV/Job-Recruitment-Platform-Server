@@ -31,6 +31,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.*;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -328,7 +329,7 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public JobSearchResponse searchJobByTitle(JobSearchRequest request) {
+    public PageResult<JobResponse> searchJobByTitle(JobSearchRequest request) {
         try {
             // Setup HTTP headers
             HttpHeaders headers = new HttpHeaders();
@@ -344,16 +345,19 @@ public class JobServiceImpl implements JobService {
                     JobSearchServiceResponse.class
             );
 
-            List<JobResponse> jobs = null;
+            List<JobResponse> jobs = new ArrayList<>();
             if (!response.getJobIds().isEmpty()) {
                 jobs = jobRepository.findAllById(response.getJobIds()).stream()
                         .map(jobMapper::toResponse)
                         .toList();
             }
 
-            return JobSearchResponse.builder()
-                    .jobs(jobs)
-                    .pagination(response.getPagination())
+            return PageResult.<JobResponse>builder()
+                    .content(jobs)
+                    .size(response.getPagination().getLimit())
+                    .totalElements(jobs.size())
+                    .hasNext(response.getPagination().isHasNext())
+                    .hasPrevious(response.getPagination().isHasPrev())
                     .build();
         } catch (RestClientException e) {
             log.error("Error calling search service at {}: {}", SEARCH_SERVICE_URL, e.getMessage(), e);
