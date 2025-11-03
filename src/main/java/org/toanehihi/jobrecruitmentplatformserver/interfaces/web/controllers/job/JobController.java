@@ -64,8 +64,8 @@ public class JobController {
     }
 
     @PostMapping("public/search")
-    public DataResponse<JobSearchResponse> searchJobByTitle(@RequestBody JobSearchRequest request) {
-        return DataResponse.<JobSearchResponse>builder()
+    public DataResponse<PageResult<JobResponse>> searchJobByTitle(@RequestBody JobSearchRequest request) {
+        return DataResponse.<PageResult<JobResponse>>builder()
                 .data(jobService.searchJobByTitle(request))
                 .build();
     }

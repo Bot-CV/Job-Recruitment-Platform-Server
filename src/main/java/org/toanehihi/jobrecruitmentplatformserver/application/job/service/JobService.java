@@ -19,7 +19,7 @@ public interface JobService {
 
     JobResponse moderateJobPosting(Account account, Long id, String action);
 
-   JobSearchResponse searchJobByTitle(JobSearchRequest request);
+   PageResult<JobResponse> searchJobByTitle(JobSearchRequest request);
 
     void deleteJob(Long id);
 
