@@ -62,6 +62,9 @@ public class SecurityConfig {
 
             // Company public endpoints
             "/api/companies/public/**",
+
+            // Analyze resume
+            "/api/resources/resumes/analyze/**"
     };
 
     @Bean

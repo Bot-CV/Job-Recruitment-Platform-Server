@@ -86,6 +86,7 @@ public enum ErrorCode {
     RESOURCE_UPLOAD_FAILED(9653, "Resource upload failed", HttpStatus.INTERNAL_SERVER_ERROR),
     RESOURCE_DOWNLOAD_FAILED(9654, "Resource download failed", HttpStatus.INTERNAL_SERVER_ERROR),
     RESOURCE_ATTESTATION_HAS_BEEN_SENT(9655, "Your company's attestations has been sent", HttpStatus.FORBIDDEN),
+    RESOURCE_TYPE_NOT_ALLOWED(9656, "Resource type not allow", HttpStatus.FORBIDDEN),
 
     // Database constraint violations(9701 - 9800)
     DATABASE_CONSTRAINT_VIOLATION(9701, "Database constraint violated", HttpStatus.BAD_REQUEST),
