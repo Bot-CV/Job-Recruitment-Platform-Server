@@ -7,10 +7,9 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.annotation.CurrentUser;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
-import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.CreateJobRequest;
-import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.JobDetailResponse;
-import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.JobResponse;
-import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.UpdateJobRequest;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.*;
+
+import javax.naming.directory.SearchResult;
 
 @RestController
 @RequestMapping("/api/job")
@@ -61,6 +60,13 @@ public class JobController {
     public DataResponse<JobDetailResponse> getJobDetail(@PathVariable Long jobId){
         return DataResponse.<JobDetailResponse>builder()
                 .data(jobService.getJobDetail(jobId))
+                .build();
+    }
+
+    @PostMapping("public/search")
+    public DataResponse<PageResult<JobResponse>> searchJobByTitle(@RequestBody JobSearchRequest request) {
+        return DataResponse.<PageResult<JobResponse>>builder()
+                .data(jobService.searchJobByTitle(request))
                 .build();
     }
 }

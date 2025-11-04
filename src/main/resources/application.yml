@@ -56,3 +56,4 @@ cloudinary:
   api-secret: ${CLOUDINARY_API_SECRET}
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  nlp-service-url: ${NPL_SERVICE_URL:http://localhost:8000}

@@ -2,7 +2,6 @@ package org.toanehihi.jobrecruitmentplatformserver.application.email.service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;

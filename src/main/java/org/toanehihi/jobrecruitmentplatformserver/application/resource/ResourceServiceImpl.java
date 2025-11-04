@@ -1,7 +1,17 @@
 package org.toanehihi.jobrecruitmentplatformserver.application.resource;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudStorageService;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudinaryStorageImpl;
@@ -17,6 +27,7 @@ import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.rep
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.RecruiterRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.ResourceRepository;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.annotation.HasRecruiterRole;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.FileData;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
 
 import jakarta.transaction.Transactional;
@@ -24,6 +35,7 @@ import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.LongConsumer;
@@ -34,10 +46,15 @@ public class ResourceServiceImpl implements ResourceService {
     private final RecruiterRepository recruiterRepository;
     private final CandidateRepository candidateRepository;
     private final ResourceRepository resourceRepository;
-    private final AttestationResourceRepository attestationResourceRepository;
-    private final CloudStorageService cloudStorageService;
-    private final ResourceMapper resourceMapper;
     private final CompanyRepository companyRepository;
+    private final AttestationResourceRepository attestationResourceRepository;
+    private final ResourceMapper resourceMapper;
+    private final CloudStorageService cloudStorageService;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @Value("${app.nlp-service-url}")
+    private String nlpServiceUrl;
 
     @Override
     public ResourceResponse updateUserAvatar(Account account, MultipartFile avatar) {
@@ -186,5 +203,33 @@ public class ResourceServiceImpl implements ResourceService {
         return attestations.stream()
                 .map(attestation -> resourceMapper.toResponse(attestation.getResource()))
                 .toList();
+    }
+
+    @Override
+    public Map<String, Object> analyzeResume(Long resourceId) {
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        if (resource.getResourceType() != ResourceType.CV) {
+            throw new AppException(ErrorCode.RESOURCE_TYPE_NOT_ALLOWED);
+        }
+        FileData fileData = cloudStorageService.downloadFile(resource.getUrl());
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", new ByteArrayResource(fileData.getContent()) {
+            @Override
+            public String getFilename() {
+                return resource.getName(); // Important: provide filename
+            }
+        });
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+        ResponseEntity<Map> response = restTemplate.postForEntity(
+                nlpServiceUrl + "/extract",
+                requestEntity,
+                Map.class);
+
+        return response.getBody();
     }
 }

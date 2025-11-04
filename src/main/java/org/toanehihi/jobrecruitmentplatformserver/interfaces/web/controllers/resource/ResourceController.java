@@ -1,6 +1,7 @@
 package org.toanehihi.jobrecruitmentplatformserver.interfaces.web.controllers.resource;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,6 +51,13 @@ public class ResourceController {
 			@RequestParam("files") List<MultipartFile> files) {
 		return DataResponse.<List<ResourceResponse>>builder()
 				.data(resourceService.uploadAttestation(account, files))
+				.build();
+	}
+
+	@GetMapping("/resumes/analyze")
+	DataResponse<Map<String, Object>> analyzeResume(@RequestParam("resourceId") Long resourceId) {
+		return DataResponse.<Map<String, Object>>builder()
+				.data(resourceService.analyzeResume(resourceId))
 				.build();
 	}
 }
