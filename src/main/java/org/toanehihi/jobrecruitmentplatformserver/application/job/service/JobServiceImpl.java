@@ -106,15 +106,15 @@ public class JobServiceImpl implements JobService {
         job.setJobRole(jobRole);
         job.setDatePosted(OffsetDateTime.now());
         job.setStatus(request.isSaveAsDraft() ? JobStatus.DRAFT : JobStatus.PENDING);
+        job.getDescription().setJob(job);
 
         job = jobRepository.save(job);
-        job.getDescription().setJob(job);
         jobDescriptionRepository.save(job.getDescription());
         
         // Save outbox event for job creation
-        JobResponse jobResponse = jobMapper.toResponse(job);
+        JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
-            String payload = objectMapper.writeValueAsString(jobResponse);
+            String payload = objectMapper.writeValueAsString(eventPayload);
             outboxEventService.saveOutboxEvent("JOB", job.getId(), "CREATED", payload);
             log.debug("Saved outbox event for job creation: jobId={}", job.getId());
         } catch (Exception e) {
@@ -122,7 +122,7 @@ public class JobServiceImpl implements JobService {
                     job.getId(), e.getMessage(), e);
         }
         
-        return jobResponse;
+        return jobMapper.toResponse(job);
     }
 
     @Override
@@ -146,9 +146,9 @@ public class JobServiceImpl implements JobService {
         jobRepository.save(job);
         
         // Save outbox event for job update
-        JobResponse jobResponse = jobMapper.toResponse(job);
+        JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
-            String payload = objectMapper.writeValueAsString(jobResponse);
+            String payload = objectMapper.writeValueAsString(eventPayload);
             outboxEventService.saveOutboxEvent("JOB", job.getId(), "UPDATED", payload);
             log.debug("Saved outbox event for job update: jobId={}", job.getId());
         } catch (Exception e) {
@@ -156,7 +156,7 @@ public class JobServiceImpl implements JobService {
                     job.getId(), e.getMessage(), e);
         }
         
-        return jobResponse;
+        return jobMapper.toResponse(job);
     }
 
     private void validateJobCanBeUpdated(Job job) {
@@ -279,9 +279,9 @@ public class JobServiceImpl implements JobService {
         job = jobRepository.save(job);
         
         // Save outbox event for job cancellation
-        JobResponse jobResponse = jobMapper.toResponse(job);
+        JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
-            String payload = objectMapper.writeValueAsString(jobResponse);
+            String payload = objectMapper.writeValueAsString(eventPayload);
             outboxEventService.saveOutboxEvent("JOB", job.getId(), "UPDATED", payload);
             log.debug("Saved outbox event for job cancellation: jobId={}", job.getId());
         } catch (Exception e) {
@@ -289,7 +289,7 @@ public class JobServiceImpl implements JobService {
                     job.getId(), e.getMessage(), e);
         }
         
-        return jobResponse;
+        return jobMapper.toResponse(job);
     }
 
     @Override
@@ -314,9 +314,9 @@ public class JobServiceImpl implements JobService {
         job = jobRepository.save(job);
         
         // Save outbox event for job moderation
-        JobResponse jobResponse = jobMapper.toResponse(job);
+        JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
-            String payload = objectMapper.writeValueAsString(jobResponse);
+            String payload = objectMapper.writeValueAsString(eventPayload);
             String eventType = action.equals("APPROVE") ? "PUBLISHED" : "UPDATED";
             outboxEventService.saveOutboxEvent("JOB", job.getId(), eventType, payload);
             log.debug("Saved outbox event for job moderation: jobId={}, action={}", job.getId(), action);
@@ -325,7 +325,7 @@ public class JobServiceImpl implements JobService {
                     job.getId(), action, e.getMessage(), e);
         }
         
-        return jobResponse;
+        return jobMapper.toResponse(job);
     }
 
     @Override
@@ -373,8 +373,8 @@ public class JobServiceImpl implements JobService {
         
         // Save outbox event for job deletion before deleting
         try {
-            JobResponse jobResponse = jobMapper.toResponse(job);
-            String payload = objectMapper.writeValueAsString(jobResponse);
+            JobEventPayload eventPayload = jobMapper.toEventPayload(job);
+            String payload = objectMapper.writeValueAsString(eventPayload);
             outboxEventService.saveOutboxEvent("JOB", job.getId(), "DELETED", payload);
             log.debug("Saved outbox event for job deletion: jobId={}", job.getId());
         } catch (Exception e) {

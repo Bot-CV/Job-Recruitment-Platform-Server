@@ -5,6 +5,7 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.JobDescription;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.skill.SkillMapper;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.CreateJobRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.JobDetailResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.JobEventPayload;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.JobResponse;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Job;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Location;
@@ -18,16 +19,6 @@ public class JobMapper {
     }
 
     public JobResponse toResponse(Job job){
-        Location jobLocation = job.getLocation();
-        String location = null;
-        if (jobLocation != null){
-            location = jobLocation.getStreetAddress() + ", " +
-                    jobLocation.getWard() + ", " +
-                    jobLocation.getDistrict() + ", " +
-                    jobLocation.getProvinceCity() + ", " +
-                    jobLocation.getCountry();
-        }
-
         return JobResponse.builder()
                 .id(job.getId())
                 .title(job.getTitle())
@@ -35,7 +26,7 @@ public class JobMapper {
                 .jobRole(job.getJobRole().getName())
                 .seniority(job.getSeniority())
                 .minExperienceYears(job.getMinExperienceYears())
-                .location(location)
+                .location(extractLocation(job.getLocation()))
                 .workMode(job.getWorkMode())
                 .salaryMin(job.getSalaryMin())
                 .salaryMax(job.getSalaryMax())
@@ -49,16 +40,6 @@ public class JobMapper {
     }
 
     public JobDetailResponse toJobDetailResponse(Job job){
-        Location jobLocation = job.getLocation();
-        String location = null;
-        if (jobLocation != null){
-            location = jobLocation.getStreetAddress() + ", " +
-                    jobLocation.getWard() + ", " +
-                    jobLocation.getDistrict() + ", " +
-                    jobLocation.getProvinceCity() + ", " +
-                    jobLocation.getCountry();
-        }
-
         return JobDetailResponse.builder()
                 .id(job.getId())
                 .title(job.getTitle())
@@ -66,7 +47,7 @@ public class JobMapper {
                 .jobRole(job.getJobRole().getName())
                 .seniority(job.getSeniority())
                 .minExperienceYears(job.getMinExperienceYears())
-                .location(location)
+                .location(extractLocation(job.getLocation()))
                 .workMode(job.getWorkMode())
                 .salaryMin(job.getSalaryMin())
                 .salaryMax(job.getSalaryMax())
@@ -110,5 +91,43 @@ public class JobMapper {
                         .notes(request.getNotes())
                         .build())
                 .build();
+    }
+
+    public JobEventPayload toEventPayload(Job job){
+        return JobEventPayload.builder()
+                .id(job.getId())
+                .title(job.getTitle())
+                .skills(job.getSkills().stream().map(skillMapper::toResponse).toList())
+                .location(extractLocation(job.getLocation()))
+                .description(buildDescription(job.getDescription()))
+                .company(job.getCompany().getName())
+                .jobRole(job.getJobRole().getName())
+                .seniority(job.getSeniority())
+                .minExperienceYears(job.getMinExperienceYears())
+                .workMode(job.getWorkMode())
+                .salaryMin(job.getSalaryMin())
+                .salaryMax(job.getSalaryMax())
+                .currency(job.getCurrency())
+                .status(job.getStatus())
+                .maxCandidates(job.getMaxCandidates())
+                .datePosted(job.getDatePosted())
+                .dateExpires(job.getDateExpires())
+                .build();
+    }
+
+    private String extractLocation(Location jobLocation){
+        if (jobLocation == null) {
+            return null;
+        }
+        return jobLocation.getStreetAddress() + ", " +
+                jobLocation.getWard() + ", " +
+                jobLocation.getDistrict() + ", " +
+                jobLocation.getProvinceCity() + ", " +
+                jobLocation.getCountry();
+    }
+    private String buildDescription(JobDescription jobDescription){
+        return "Responsibilities: " + jobDescription.getResponsibilities() + "\n" +
+                "Requirements: " + jobDescription.getRequirements() + "\n" +
+                "Nice to have: " + jobDescription.getNiceToHave() + "\n";
     }
 }
