@@ -3,6 +3,7 @@ package org.toanehihi.jobrecruitmentplatformserver.application.auth.service;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,7 +17,6 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.*;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.AccountStatus;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.AuthProvider;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ResourceType;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.account.AccountMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.*;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.account.AccountResponse;
@@ -48,6 +48,9 @@ public class AuthServiceImpl implements AuthService {
     private final GoogleOAuthService googleOAuthService;
     private final PasswordEncoder passwordEncoder;
     private final ResourceRepository resourceRepository;
+
+    @Value("${app.default-avatar-public-id}")
+    private String defaultAvtPublicId;
 
     @Override
     @Transactional
@@ -83,18 +86,10 @@ public class AuthServiceImpl implements AuthService {
         account.setProvider(AuthProvider.LOCAL);
         Account savedAccount = accountRepository.save(account);
 
-        Resource resource = Resource.builder()
-                .resourceType(ResourceType.AVATAR)
-                .url("https://www.topcv.vn/images/avatar-default.jpg")
-                .mimeType("image/jpeg")
-                .name("default-avatar.jpg")
-                .build();
-        resource = resourceRepository.save(resource);
-
         Candidate candidate = Candidate.builder()
                 .account(savedAccount)
                 .fullName(request.getFullName())
-                .avatarResourceId(resource.getId())
+                .avatarResourceId(getDefaultAvatar().getId())
                 .build();
         candidateRepository.save(candidate);
 
@@ -124,7 +119,7 @@ public class AuthServiceImpl implements AuthService {
         Recruiter recruiter = Recruiter.builder()
                 .account(savedAccount)
                 .fullName(request.getFullName())
-                .avatarResourceId(123L) // create default avatar later
+                .avatarResourceId(getDefaultAvatar().getId())
                 .company(savedCompany)
                 .build();
         recruiterRepository.save(recruiter);
@@ -267,5 +262,10 @@ public class AuthServiceImpl implements AuthService {
         }
 
         jwtService.blacklistToken(refreshToken);
+    }
+
+    private Resource getDefaultAvatar() {
+        return resourceRepository.findByPublicId(defaultAvtPublicId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
     }
 }

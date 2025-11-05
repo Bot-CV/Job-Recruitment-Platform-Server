@@ -10,6 +10,6 @@ import java.util.Optional;
 @Repository
 public interface ResourceRepository extends JpaRepository<Resource, Long> {
     Optional<Resource> findByIdAndResourceType(Long id, ResourceType resourceType);
+
+    Optional<Resource> findByPublicId(String publicId);
 }
-
-

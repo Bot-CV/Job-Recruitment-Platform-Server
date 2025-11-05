@@ -80,3 +80,34 @@ WHERE
         WHERE
             email = 'admin@botcv.com'
     );
+
+-- ========================================
+-- INIT ADMIN ACCOUNT
+-- ========================================
+INSERT INTO
+    resources (
+        mime_type,
+        content_type,
+        resource_type,
+        url,
+        public_id,
+        name,
+        uploaded_at
+    )
+SELECT
+    'image',
+    'image/png',
+    'AVATAR',
+    'https://res.cloudinary.com/dyrppweev/image/upload/v1762334207/user_gtftij.png',
+    'bot-cv/avatar/299c1e01-6d3c-462d-a49b-993f51b06cef',
+    'default-avatar',
+    NOW ()
+WHERE
+    NOT EXISTS (
+        SELECT
+            1
+        FROM
+            resources
+        WHERE
+            public_id = 'bot-cv/avatar/299c1e01-6d3c-462d-a49b-993f51b06cef'
+    );
