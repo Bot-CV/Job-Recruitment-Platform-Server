@@ -1,6 +1,8 @@
 spring:
   application:
     name: JobRecruitmentPlatform-Server
+  flyway:
+    enabled: true
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/jrp?stringtype=unspecified}
     username: ${DATABASE_USERNAME:root}
@@ -57,3 +59,5 @@ cloudinary:
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
   nlp-service-url: ${NPL_SERVICE_URL:http://localhost:8000}
+
+

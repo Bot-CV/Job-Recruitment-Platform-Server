@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.toanehihi.jobrecruitmentplatformserver.application.analytics.service.AnalyticService;
+import org.toanehihi.jobrecruitmentplatformserver.application.analytics.service.InteractionService;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudStorageService;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudinaryStorageImpl.CloudinaryFileInfo;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
@@ -32,7 +32,6 @@ import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.map
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.JobApplicationMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.SavedJobMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.location.LocationMapper;
-import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.resource.ResourceMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.CandidateRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.JobApplicationRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.JobRepository;
@@ -69,7 +68,7 @@ public class CandidateServiceImpl implements CandidateService {
     private final JobApplicationMapper jobApplicationMapper;
     private final CurrentAccountProvider currentAccountProvider;
     private final CloudStorageService cloudStorageService;
-    private final AnalyticService analyticService;
+    private final InteractionService analyticService;
 
     @Override
     public CandidateResponse getProfile() {

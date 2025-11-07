@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.EventType;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.InteractionEventType;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.converter.JsonbConverter;
 
 import java.time.OffsetDateTime;
@@ -16,15 +16,20 @@ import java.util.Map;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "analytics")
-public class Analytic {
+@Table(name = "user_interactions")
+public class UserInteraction {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long accountId;
-    private Long targetId;
-    private EventType eventType;
+    private Long jobId;
+
+    @Enumerated(EnumType.STRING)
+    private InteractionEventType eventType;
+
     @Column(columnDefinition = "jsonb")
     @Convert(converter = JsonbConverter.class)
     private Map<String, Object> metadata;
+
     private OffsetDateTime occurredAt;
 }

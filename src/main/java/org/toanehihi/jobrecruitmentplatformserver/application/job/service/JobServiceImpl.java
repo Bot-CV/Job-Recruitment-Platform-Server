@@ -14,7 +14,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClientException;
-import org.toanehihi.jobrecruitmentplatformserver.application.analytics.service.AnalyticService;
+import org.toanehihi.jobrecruitmentplatformserver.application.analytics.service.InteractionService;
 import org.toanehihi.jobrecruitmentplatformserver.application.outbox.service.OutboxEventService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
@@ -48,7 +48,7 @@ public class JobServiceImpl implements JobService {
     private final RecruiterRepository recruiterRepository;
     private final JobApplicationRepository jobApplicationRepository;
     private final JobDescriptionRepository jobDescriptionRepository;
-    private final AnalyticService analyticService;
+    private final InteractionService analyticService;
     private final OutboxEventService outboxEventService;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
