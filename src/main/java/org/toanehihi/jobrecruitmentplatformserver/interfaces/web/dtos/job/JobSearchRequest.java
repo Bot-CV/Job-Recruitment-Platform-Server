@@ -12,5 +12,5 @@ public class JobSearchRequest {
     private String query;
     private int limit;
     private int offset;
-    private Map<String, Integer> weights;
+    private Map<String, String> filters;
 }
