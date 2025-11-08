@@ -25,7 +25,7 @@ public class OutboxEventProcessor {
      * Process pending outbox events and publish them to Redis Stream
      * Runs every 5 seconds
      */
-    @Scheduled(fixedDelay = 5000, initialDelay = 10000)
+    @Scheduled(fixedDelay = 60000, initialDelay = 10000)
     @Transactional
     public void processPendingEvents() {
         try {

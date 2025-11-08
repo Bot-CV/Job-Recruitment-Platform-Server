@@ -33,7 +33,9 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.*;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -347,10 +349,16 @@ public class JobServiceImpl implements JobService {
 
             List<JobResponse> jobs = new ArrayList<>();
             if (!response.getJobIds().isEmpty()) {
-                jobs = jobRepository.findAllById(response.getJobIds()).stream()
+                List<Job> rows = jobRepository.findAllById(response.getJobIds());
+                Map<Long, JobResponse> jobMap = rows.stream()
                         .map(jobMapper::toResponse)
-                        .toList();
+                        .collect(Collectors.toMap(JobResponse::getId, Function.identity()));
+
+                jobs = response.getJobIds().stream()
+                        .map(jobMap::get)
+                        .collect(Collectors.toList());
             }
+
 
             return PageResult.<JobResponse>builder()
                     .content(jobs)

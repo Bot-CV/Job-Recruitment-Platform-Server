@@ -10,6 +10,7 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.Job;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.JobStatus;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long> {
@@ -27,4 +28,12 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     LIMIT 3
     """, nativeQuery = true)
     List<Job> findNewestJob(Long companyId);
+
+    @Query("select j from Job j\n" +
+            " left join fetch j.skills s\n" +
+            " left join fetch j.jobRole jr\n" +
+            " left join fetch j.location l\n" +
+            " left join fetch j.company c\n" +
+            " where j.id = :id")
+    Optional<Job> findByIdWithRelations(@NonNull Long id);
 }

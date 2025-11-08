@@ -63,7 +63,7 @@ public class JobController {
                 .build();
     }
 
-    @PostMapping("public/search")
+    @PostMapping("/public/search")
     public DataResponse<PageResult<JobResponse>> searchJobByTitle(@RequestBody JobSearchRequest request) {
         return DataResponse.<PageResult<JobResponse>>builder()
                 .data(jobService.searchJobByTitle(request))

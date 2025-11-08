@@ -10,6 +10,7 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.OutboxStatu
 
 import jakarta.persistence.LockModeType;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> {
@@ -17,4 +18,9 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT e FROM OutboxEvent e WHERE e.status = :status ORDER BY e.occurredAt ASC")
     List<OutboxEvent> findPendingEvents(@Param("status") OutboxStatus status);
+
+    boolean existsByAggregateTypeAndAggregateId(String aggregateType, Long aggregateId);
+
+    @Query("SELECT DISTINCT e.aggregateId FROM OutboxEvent e WHERE e.aggregateType = :aggregateType")
+    Set<Long> findDistinctAggregateIdsByAggregateType(@Param("aggregateType") String aggregateType);
 }
