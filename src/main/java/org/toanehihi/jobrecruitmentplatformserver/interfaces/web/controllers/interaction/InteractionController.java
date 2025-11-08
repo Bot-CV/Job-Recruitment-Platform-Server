@@ -6,9 +6,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.toanehihi.jobrecruitmentplatformserver.application.analytics.service.InteractionService;
-import org.toanehihi.jobrecruitmentplatformserver.infrastructure.security.CurrentAccountProvider;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataResponse;
-import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.interaction.InteractionRequest;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.interaction.InteractionEvent;
 
 import java.util.List;
 
@@ -20,9 +19,9 @@ public class InteractionController {
 
     @PostMapping
     public DataResponse<?> trackInteraction(
-            @RequestBody List<InteractionRequest> request
+            @RequestBody List<InteractionEvent> request
     ) {
         interactionService.trackQuery(request);
-        return DataResponse.builder().data("Interaction tracked successfully").build();
+        return DataResponse.builder().data("Interaction events published to stream for processing").build();
     }
 }

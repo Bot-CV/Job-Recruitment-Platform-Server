@@ -449,6 +449,7 @@ CREATE TABLE
         id BIGSERIAL PRIMARY KEY,
         account_id BIGINT,
         event_type interaction_event_type NOT NULL,
+        external_id VARCHAR(64) UNIQUE,
         job_id BIGINT,
         metadata JSONB,
         occurred_at TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),

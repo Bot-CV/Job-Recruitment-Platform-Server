@@ -10,9 +10,10 @@ import java.util.Map;
 
 @Getter
 @Setter
-public class InteractionRequest {
+public class InteractionEvent {
     @JsonProperty("job_id")
     private Long jobId;
+    private Long accountId;
     @JsonProperty("event_type")
     private InteractionEventType eventType;
     private Map<String, Object> metadata;

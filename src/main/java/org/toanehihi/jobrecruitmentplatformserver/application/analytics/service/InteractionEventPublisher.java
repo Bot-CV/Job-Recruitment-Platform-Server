@@ -4,6 +4,6 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.interactio
 
 import java.util.List;
 
-public interface InteractionService {
-    void trackQuery(List<InteractionEvent> request);
+public interface InteractionEventPublisher {
+    void publish(List<InteractionEvent> events);
 }
