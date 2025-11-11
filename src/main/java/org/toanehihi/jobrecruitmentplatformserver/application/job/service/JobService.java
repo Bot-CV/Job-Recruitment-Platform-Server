@@ -4,6 +4,8 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.*;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 
+import java.util.List;
+
 public interface JobService {
     JobDetailResponse getJobDetail(Long id);
 
@@ -19,7 +21,9 @@ public interface JobService {
 
     JobResponse moderateJobPosting(Account account, Long id, String action);
 
-   PageResult<JobResponse> searchJobByTitle(JobSearchRequest request);
+    PageResult<JobResponse> searchJobByTitle(JobSearchRequest request);
+
+    List<JobResponse> recommendJobs(Account account);
 
     void deleteJob(Long id);
 

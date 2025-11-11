@@ -70,7 +70,10 @@ public class SecurityConfig {
             "/api/resources/resumes/analyze/**",
 
             // Job Search
-            "/api/job/public/search"
+            "/api/job/public/search",
+
+            // Testing
+            "/api/candidates/profile/**"
     };
 
     @Bean

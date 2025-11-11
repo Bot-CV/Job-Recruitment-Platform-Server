@@ -421,6 +421,7 @@ CREATE INDEX idx_saved_jobs_saved_at ON saved_jobs (saved_at DESC);
 CREATE TABLE
     resources (
         id BIGSERIAL PRIMARY KEY,
+        owner_id BIGINT, -- For candidate|s.o who uploaded the resume/avatar etc.
         mime_type TEXT NOT NULL,
         content_type TEXT NOT NULL,
         resource_type resource_type NOT NULL,

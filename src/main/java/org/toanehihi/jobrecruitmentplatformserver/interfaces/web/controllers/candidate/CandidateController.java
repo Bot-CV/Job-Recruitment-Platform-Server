@@ -18,6 +18,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicationResponse;
 import lombok.RequiredArgsConstructor;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
 
 @RestController
 @RequestMapping("api/candidates")
@@ -81,6 +82,24 @@ public class CandidateController {
             @RequestParam(defaultValue = "desc") String sortDir) {
         return DataResponse.<PageResult<SavedJobResponse>>builder()
                 .data(candidateService.getAllSavedJobs(page, size, sortBy, sortDir))
+                .build();
+    }
+
+    @GetMapping("/resumes")
+    DataResponse<PageResult<ResourceResponse>> getCandidateResumes(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "uploadedAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        return DataResponse.<PageResult<ResourceResponse>>builder()
+                .data(candidateService.getCandidateResumes(page, size, sortBy, sortDir))
+                .build();
+    }
+
+    @GetMapping("/profile/{candidateId}")
+    DataResponse<?> getUserProfileBasedData(@PathVariable Long candidateId) {
+        return DataResponse.builder()
+                .data(candidateService.getUserProfileBasedData(candidateId))
                 .build();
     }
 }

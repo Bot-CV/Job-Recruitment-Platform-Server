@@ -16,5 +16,7 @@ public interface ResourceService {
 
     List<ResourceResponse> uploadAttestation(Account account, List<MultipartFile> files);
 
+    ResourceResponse uploadResume(Account account, MultipartFile file);
+
     Map<String, Object> analyzeResume(Long resourceId);
 }

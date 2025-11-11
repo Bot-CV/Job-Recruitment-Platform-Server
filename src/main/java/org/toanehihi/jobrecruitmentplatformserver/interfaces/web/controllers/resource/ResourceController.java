@@ -60,4 +60,12 @@ public class ResourceController {
 				.data(resourceService.analyzeResume(resourceId))
 				.build();
 	}
+
+    @PostMapping("/upload/resume")
+    DataResponse<ResourceResponse> uploadResume(@CurrentUser Account account,
+            @RequestParam("file") MultipartFile file) {
+        return DataResponse.<ResourceResponse>builder()
+                .data(resourceService.uploadResume(account, file))
+                .build();
+    }
 }

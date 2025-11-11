@@ -21,6 +21,9 @@ public class Resource {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+    @Column(name = "owner_id")
+    private Long ownerId;
+
 	@Column(name = "mime_type", nullable = false)
 	private String mimeType;
 

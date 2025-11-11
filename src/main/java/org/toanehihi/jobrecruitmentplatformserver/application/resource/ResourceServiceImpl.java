@@ -206,6 +206,24 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    public ResourceResponse uploadResume(Account account, MultipartFile file) {
+        Candidate candidate = candidateRepository.findByAccountId(account.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_CANDIDATE_NOT_FOUND));
+        CloudinaryStorageImpl.CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(file, "resume");
+        Resource resource = Resource.builder()
+                .ownerId(candidate.getId())
+                .mimeType(fileInfo.mimeType())
+                .contentType(fileInfo.contentType())
+                .resourceType(ResourceType.CV)
+                .url(fileInfo.url())
+                .publicId(fileInfo.publicId())
+                .name(fileInfo.fileName())
+                .build();
+        Resource savedResource = resourceRepository.save(resource);
+        return resourceMapper.toResponse(savedResource);
+    }
+
+    @Override
     public Map<String, Object> analyzeResume(Long resourceId) {
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));

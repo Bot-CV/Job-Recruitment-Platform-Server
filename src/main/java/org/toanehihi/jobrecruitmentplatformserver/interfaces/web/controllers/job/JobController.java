@@ -10,6 +10,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.*;
 
 import javax.naming.directory.SearchResult;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/job")
@@ -67,6 +68,18 @@ public class JobController {
     public DataResponse<PageResult<JobResponse>> searchJobByTitle(@RequestBody JobSearchRequest request) {
         return DataResponse.<PageResult<JobResponse>>builder()
                 .data(jobService.searchJobByTitle(request))
+                .build();
+    }
+
+    @GetMapping("/recommendation")
+    public DataResponse<?> getRecommendedJobs(
+            @CurrentUser Account account,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        return DataResponse.builder()
+                .data(jobService.recommendJobs(account))
                 .build();
     }
 }

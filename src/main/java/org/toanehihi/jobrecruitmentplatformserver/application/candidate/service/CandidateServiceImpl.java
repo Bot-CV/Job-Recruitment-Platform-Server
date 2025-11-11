@@ -1,10 +1,9 @@
 package org.toanehihi.jobrecruitmentplatformserver.application.candidate.service;
 
 import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
+import com.cloudinary.utils.Analytics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.application.analytics.service.InteractionService;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudStorageService;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudinaryStorageImpl.CloudinaryFileInfo;
+import org.toanehihi.jobrecruitmentplatformserver.application.resource.ResourceService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
@@ -32,6 +32,7 @@ import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.map
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.JobApplicationMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.SavedJobMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.location.LocationMapper;
+import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.resource.ResourceMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.CandidateRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.JobApplicationRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.JobRepository;
@@ -43,8 +44,10 @@ import org.toanehihi.jobrecruitmentplatformserver.infrastructure.security.Curren
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.UserProfileBasedResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicationResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.skill.CandidateSkillRequest;
 
 import jakarta.transaction.Transactional;
@@ -68,7 +71,8 @@ public class CandidateServiceImpl implements CandidateService {
     private final JobApplicationMapper jobApplicationMapper;
     private final CurrentAccountProvider currentAccountProvider;
     private final CloudStorageService cloudStorageService;
-    private final InteractionService analyticService;
+    private final ResourceService resourceService;
+    private final ResourceMapper resourceMapper;
 
     @Override
     public CandidateResponse getProfile() {
@@ -134,7 +138,6 @@ public class CandidateServiceImpl implements CandidateService {
                 .savedAt(OffsetDateTime.now())
                 .build();
         SavedJob result = savedJobRepository.save(savedJob);
-        // analyticService.trackJobSaved(candidate.getAccount().getId(), job.getId());
         return savedJobMapper.toResponse(result);
     }
 
@@ -171,8 +174,6 @@ public class CandidateServiceImpl implements CandidateService {
                 .build();
 
         JobApplication savedJobApplication = jobApplicationRepository.save(jobApplication);
-
-        // analyticService.trackJobApplied(candidate.getAccount().getId(), job.getId());
         return jobApplicationMapper.toResponse(savedJobApplication);
     }
 
@@ -197,6 +198,69 @@ public class CandidateServiceImpl implements CandidateService {
 
         return PageResult.from(
                 savedJobPage.map(savedJobMapper::toResponse));
+    }
+
+    @Override
+    public PageResult<ResourceResponse> getCandidateResumes(int page, int size, String sortBy, String sortDir) {
+        Candidate candidate = getCurrentCandidate();
+        Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<ResourceResponse> resourcePage = resourceRepository.findByOwnerIdAndResourceType(candidate.getId(), ResourceType.CV, pageable)
+                .map(resourceMapper::toResponse);
+
+        return PageResult.from(resourcePage);
+    }
+
+    @Override
+    public UserProfileBasedResponse getUserProfileBasedData(Long candidateId) {
+        Candidate candidate = candidateRepository.findById(candidateId).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_CANDIDATE_NOT_FOUND));
+//        List<Map<String, Object>> allUserResume = resourceRepository.findAllByOwnerIdAndResourceType(candidate.getId(), ResourceType.CV)
+//                .stream()
+//                .map(resource -> {
+//                    return resourceService.analyzeResume(resource.getId());
+//                })
+//                .toList();
+
+        Set<String> skills = new HashSet<>();
+        Set<String> educations = new HashSet<>();
+        Set<String> experiences = new HashSet<>();
+        Set<String> locations = new HashSet<>();
+//        for(Map<String, Object> resumeData : allUserResume) {
+            // Extract skills
+//            List<String> resumeSkills = (List<String>) resumeData.get("SKILLS");
+//            if (resumeSkills != null) {
+//                skills.addAll(resumeSkills);
+//            }
+            if (!candidate.getSkills().isEmpty()){
+                skills.addAll(candidate.getSkills().stream().map(cs -> cs.getSkill().getName()).toList());
+            }
+
+            // Extract educations
+//            List<String> resumeEducations = (List<String>) resumeData.get("EDUCATION");
+//            if (resumeEducations != null) {
+//                educations.addAll(resumeEducations);
+//            }
+
+            // Extract locations
+//            List<String> resumeLocations = (List<String>) resumeData.get("LOCATION");
+//            if (resumeLocations != null) {
+//                locations.addAll(resumeLocations);
+//            }
+            if (candidate.getLocation().getProvinceCity() != null) {
+                locations.add(candidate.getLocation().getProvinceCity());
+            }
+//        }
+        UserProfileBasedResponse response = UserProfileBasedResponse.builder()
+                .id(candidate.getId())
+                .skills(skills)
+                .educations(educations)
+                .location(locations)
+                .preferences(Map.of(
+                        "remote", candidate.getRemotePref() != null ? candidate.getRemotePref() : false,
+                        "relocation", candidate.getRelocationPref() != null ? candidate.getRelocationPref() : false
+                ))
+                .build();
+        return response;
     }
 
     // Private methods
