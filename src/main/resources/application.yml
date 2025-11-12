@@ -2,14 +2,14 @@ spring:
   application:
     name: JobRecruitmentPlatform-Server
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/jrp?stringtype=unspecified}
-    username: ${DATABASE_USERNAME:root}
-    password: ${DATABASE_PASSWORD:niggamove}
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?stringtype=unspecified
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
   jpa:
     hibernate:
       ddl-auto: none
@@ -24,9 +24,9 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: BotCV
-          secret-key: ${JWT_SECRET:7d38bb48b74cc00cfe9b83171c52042abc4a4eec296217f154ae2d810d070879}
+          secret-key: ${JWT_SECRET}
           access-token:
-            expiration: 604800000 #60000
+            expiration: 604800000
           refresh-token:
             expiration: 604800000
       client:
@@ -47,14 +47,12 @@ spring:
             enable: true
   jackson:
     time-zone: Asia/Ho_Chi_Minh
-#  profiles:
-#    default: dev
 
 cloudinary:
   cloud-name: ${CLOUDINARY_NAME}
   api-key: ${CLOUDINARY_API_KEY}
   api-secret: ${CLOUDINARY_API_SECRET}
 app:
-  frontend-url: ${FRONTEND_URL:http://localhost:3000}
-  nlp-service-url: ${NPL_SERVICE_URL:http://localhost:8000}
-  default-avatar-public-id: ${DEFAULT_AVT_PUBLIC_ID:bot-cv/avatar/299c1e01-6d3c-462d-a49b-993f51b06cef}
+  frontend-url: ${FRONTEND_URL}
+  cv-extractor-service-url: ${CV_EXTRACTOR_SERVICE_URL}
+  default-avatar-public-id: ${DEFAULT_AVT_PUBLIC_ID}

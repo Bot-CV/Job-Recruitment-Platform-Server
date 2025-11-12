@@ -53,7 +53,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${app.nlp-service-url}")
+    @Value("${app.cv-extractor-service-url}")
     private String nlpServiceUrl;
 
     @Override
