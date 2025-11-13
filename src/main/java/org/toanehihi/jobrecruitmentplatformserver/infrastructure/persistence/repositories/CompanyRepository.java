@@ -22,4 +22,16 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
             AND ar.id IS NOT NULL
             """)
     Page<Company> findAllUnverifiedCompanies(Pageable pageable);
+
+    @Query(value = """
+            SELECT COUNT(c)
+            FROM Company c
+            WHERE c.verified = false
+            AND EXISTS (
+                SELECT 1
+                FROM AttestationResource a
+                WHERE a.company = c
+                )
+            """)
+    Long countUnverifiedCompanies();
 }
