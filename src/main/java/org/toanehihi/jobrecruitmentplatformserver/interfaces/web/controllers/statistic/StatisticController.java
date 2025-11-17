@@ -8,6 +8,7 @@ import org.toanehihi.jobrecruitmentplatformserver.application.statistic.Statisti
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.annotation.CurrentUser;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.statistic.AdminStatisticResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.statistic.StatisticResponse;
 
 @RestController
@@ -16,11 +17,17 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.statistic.
 public class StatisticController {
     private final StatisticService statisticService;
 
-
-    @GetMapping
+    @GetMapping("/recruiter")
     public DataResponse<StatisticResponse> getStatistics(@CurrentUser Account account) {
         return DataResponse.<StatisticResponse>builder()
                 .data(statisticService.getPlatformStatistics(account))
+                .build();
+    }
+
+    @GetMapping("/admin")
+    public DataResponse<AdminStatisticResponse> getAdminStatistics(@CurrentUser Account account) {
+        return DataResponse.<AdminStatisticResponse>builder()
+                .data(statisticService.getAdminStatistics(account))
                 .build();
     }
 }

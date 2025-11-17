@@ -46,7 +46,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:3000")); // FE origin
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
@@ -58,19 +58,18 @@ public class SecurityConfig {
 
     String[] publicEndpoints = {
             "/api/auth/**",
-            "/api/job/public/detail/**",
 
-            // JobCategory public endpoints
-            "/api/job/category",
+            // Jobs
+            "/api/jobs/public/**",
+            "/api/jobs/public/detail/**",
+            "/api/jobs/category",
+            "/api/jobs/public/search",
 
-            // Company public endpoints
+            // Companies
             "/api/companies/public/**",
 
-            // Analyze resume
+            // Resources
             "/api/resources/resumes/analyze/**",
-
-            // Job Search
-            "/api/job/public/search",
 
             // Testing
             "/api/candidates/profile/**"

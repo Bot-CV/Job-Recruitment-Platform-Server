@@ -9,16 +9,13 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataRespon
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.*;
 
-import javax.naming.directory.SearchResult;
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/job")
+@RequestMapping("/api/jobs")
 @AllArgsConstructor
 public class JobController {
     private final JobService jobService;
 
-    @GetMapping
+    @GetMapping("/public")
     public DataResponse<PageResult<JobResponse>> getAllJobs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -37,28 +34,30 @@ public class JobController {
     }
 
     @PutMapping("/{jobId}")
-    public DataResponse<JobResponse> updateJob(@CurrentUser Account account, @PathVariable Long jobId, @RequestBody UpdateJobRequest request){
+    public DataResponse<JobResponse> updateJob(@CurrentUser Account account, @PathVariable Long jobId,
+            @RequestBody UpdateJobRequest request) {
         return DataResponse.<JobResponse>builder()
                 .data(jobService.updateJob(account, jobId, request))
                 .build();
     }
 
     @PatchMapping("/cancel/{jobId}")
-    public DataResponse<JobResponse> cancelJob(@CurrentUser Account account, @PathVariable Long jobId){
+    public DataResponse<JobResponse> cancelJob(@CurrentUser Account account, @PathVariable Long jobId) {
         return DataResponse.<JobResponse>builder()
                 .data(jobService.cancelJob(account, jobId))
                 .build();
     }
 
     @PatchMapping("/{jobId}/moderate")
-    public DataResponse<JobResponse> moderateJobPosting(@CurrentUser Account account, @PathVariable Long jobId, @RequestParam String action){
+    public DataResponse<JobResponse> moderateJobPosting(@CurrentUser Account account, @PathVariable Long jobId,
+            @RequestParam String action) {
         return DataResponse.<JobResponse>builder()
                 .data(jobService.moderateJobPosting(account, jobId, action))
                 .build();
     }
 
     @GetMapping("/public/detail/{jobId}")
-    public DataResponse<JobDetailResponse> getJobDetail(@PathVariable Long jobId){
+    public DataResponse<JobDetailResponse> getJobDetail(@PathVariable Long jobId) {
         return DataResponse.<JobDetailResponse>builder()
                 .data(jobService.getJobDetail(jobId))
                 .build();
