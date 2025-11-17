@@ -49,12 +49,14 @@ spring:
             enable: true
   jackson:
     time-zone: Asia/Ho_Chi_Minh
+  profiles:
+    default: dev
 
 cloudinary:
   cloud-name: ${CLOUDINARY_NAME}
   api-key: ${CLOUDINARY_API_KEY}
   api-secret: ${CLOUDINARY_API_SECRET}
 app:
-  frontend-url: ${FRONTEND_URL}
-  cv-extractor-service-url: ${CV_EXTRACTOR_SERVICE_URL}
-  default-avatar-public-id: ${DEFAULT_AVT_PUBLIC_ID}
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  nlp-service-url: ${NPL_SERVICE_URL:http://localhost:8001}
+  default-avatar-public-id: ${DEFAULT_AVT_PUBLIC_ID:bot-cv/avatar/299c1e01-6d3c-462d-a49b-993f51b06cef}
