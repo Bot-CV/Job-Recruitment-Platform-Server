@@ -56,7 +56,7 @@ public class JobMapper {
                 .dateExpires(job.getDateExpires())
                 .status(job.getStatus())
                 .maxCandidates(job.getMaxCandidates() != null ? job.getMaxCandidates() : null)
-                .responsibilities(job.getDescription().getResponsibilities())
+                .responsibilities(job.getDescription().getResponsibilities() != null ? job.getDescription().getResponsibilities() : "")
                 .requirements(job.getDescription().getRequirements())
                 .niceToHave(job.getDescription().getNiceToHave())
                 .benefits(job.getDescription().getBenefits())
