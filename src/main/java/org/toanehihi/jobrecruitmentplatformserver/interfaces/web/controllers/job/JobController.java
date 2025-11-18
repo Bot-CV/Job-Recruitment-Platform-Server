@@ -11,6 +11,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.*;
 
 import javax.naming.directory.SearchResult;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/job")
@@ -26,6 +27,13 @@ public class JobController {
             @RequestParam(defaultValue = "asc") String sortDir) {
         return DataResponse.<PageResult<JobResponse>>builder()
                 .data(jobService.getAllJobs(page, size, sortBy, sortDir))
+                .build();
+    }
+
+    @GetMapping("/metadata")
+    public DataResponse<List<JobMetadataResponse>> getJobsMetaData(@RequestParam Set<Long> jobIds) {
+        return DataResponse.<List<JobMetadataResponse>>builder()
+                .data(jobService.getJobMetadata(jobIds))
                 .build();
     }
 

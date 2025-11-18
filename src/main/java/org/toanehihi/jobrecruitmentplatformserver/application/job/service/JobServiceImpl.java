@@ -404,4 +404,23 @@ public class JobServiceImpl implements JobService {
         
         jobRepository.deleteById(id);
     }
+
+    @Override
+    public List<JobMetadataResponse> getJobMetadata(Set<Long> jobIds) {
+        return jobRepository.findAllById(jobIds).stream()
+                .map(job -> JobMetadataResponse.builder()
+                        .jobId(job.getId())
+                        .requiredSkills(
+                                job.getSkills().stream()
+                                .map(Skill::getName)
+                                .collect(Collectors.toSet()))
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public List<JobResponse> getJobsRecommend(Long userId) {
+
+        return List.of();
+    }
 }

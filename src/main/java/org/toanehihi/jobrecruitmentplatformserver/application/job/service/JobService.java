@@ -5,6 +5,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.*;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 
 import java.util.List;
+import java.util.Set;
 
 public interface JobService {
     JobDetailResponse getJobDetail(Long id);
@@ -27,4 +28,7 @@ public interface JobService {
 
     void deleteJob(Long id);
 
+    List<JobMetadataResponse> getJobMetadata(Set<Long> jobIds);
+
+    List<JobResponse> getJobsRecommend(Long userId);
 }
