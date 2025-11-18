@@ -38,7 +38,6 @@ const ENUM = {
     job_status: ['DRAFT','PENDING','PUBLISHED','EXPIRED','CANCELED'],
     application_status: ['SUBMITTED','REVIEWED','INTERVIEW','OFFERED','REJECTED'],
     resource_type: ['AVATAR','CV','COMPANY_LOGO','JOB_ATTACHMENT'],
-    event_type: ['SEARCH_QUERY','JOB_VIEWED','JOB_APPLIED','JOB_SAVED'],
     interview_status: ['SCHEDULED','COMPLETED','CANCELED','NO_SHOW'],
 };
 
@@ -69,7 +68,6 @@ const N = {
     companyLogos: 60,
     jobAttachments: 160,
 
-    analytics: 260,
     interviews: 100,
 
     attestationsPerCompany: [0, 2], // min, max số tài liệu xác thực
@@ -149,37 +147,6 @@ async function insertResource(client, { type, ownerId = null, mime = null }) {
     return rows[0].id;
 }
 
-/* =========================
- * BULK UPDATE analytics demo
- * ========================= */
-async function updateAnalyticsBulk(client, updates) {
-    if (!updates?.length) return { updated: 0 };
-    const values = [];
-    let i = 1;
-    const tuples = updates.map(u => {
-        values.push(
-            u.id,
-            u.event_type ?? null,
-            u.target_id ?? null,
-            u.metadata ? JSON.stringify(u.metadata) : null,
-            u.occurred_at ?? null
-        );
-        return `($${i++}::bigint,$${i++}::event_type,$${i++}::bigint,$${i++}::jsonb,$${i++}::timestamptz)`;
-    }).join(', ');
-    const sql = `
-        WITH data(id,event_type,target_id,metadata,occurred_at) AS (VALUES ${tuples})
-        UPDATE analytics a
-        SET event_type = COALESCE(d.event_type, a.event_type),
-            target_id = COALESCE(d.target_id, a.target_id),
-            metadata = COALESCE(d.metadata, a.metadata),
-            occurred_at = COALESCE(d.occurred_at, a.occurred_at)
-            FROM data d
-        WHERE a.id = d.id
-            RETURNING a.id
-    `;
-    const res = await client.query(sql, values);
-    return { updated: res.rowCount };
-}
 
 /* =========================
  * MAIN
@@ -596,41 +563,6 @@ async function main() {
             );
         }
 
-        /* -------- analytics (ENUM event_type + JSONB) -------- */
-        const analyticsRows = [];
-        for (let i = 0; i < N.analytics; i++) {
-            const eventType = pick(ENUM.event_type);
-            const accId = Math.random() < 0.8 ? pick(accountIds) : null;
-            let targetId = null;
-            let metadata = {};
-            if (eventType === 'SEARCH_QUERY') {
-                metadata = { query: faker.lorem.words(3), filters: { seniority: pick(ENUM.seniority_level), province: pick(VN_PROVINCES) } };
-            } else if (eventType === 'JOB_VIEWED') {
-                targetId = pick(jobIds); metadata = { dwellMs: randInt(500, 60000) };
-            } else if (eventType === 'JOB_APPLIED') {
-                targetId = pick(jobIds); metadata = { applicationStatus: pick(ENUM.application_status) };
-            } else if (eventType === 'JOB_SAVED') {
-                targetId = pick(jobIds); metadata = {};
-            }
-            analyticsRows.push([accId, eventType, targetId, metadata, recent(30)]);
-        }
-        await insertMany(
-            client,
-            'analytics',
-            ['account_id','event_type','target_id','metadata','occurred_at'],
-            analyticsRows,
-            ['', '::event_type', '', '::jsonb', '']
-        );
-
-        // demo bulk update 40 rows ngẫu nhiên
-        const { rows: aRows } = await client.query(`SELECT id FROM analytics ORDER BY random() LIMIT 40`);
-        const updates = aRows.map(r => ({
-            id: r.id,
-            metadata: { updated: true, note: 'bulk-fix' },
-            occurred_at: recent(10)
-        }));
-        const updRes = await updateAnalyticsBulk(client, updates);
-        console.log(`ℹ️  Bulk-updated analytics rows: ${updRes.updated}`);
 
         await client.query('COMMIT');
         console.log('✅ Seed OK!');
