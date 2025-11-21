@@ -53,8 +53,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${app.cv-extractor-service-url}")
-    private String nlpServiceUrl;
+    @Value("${app.ner-service-url}")
+    private String nerServiceUrl;
 
     @Override
     public ResourceResponse updateUserAvatar(Account account, MultipartFile avatar) {
@@ -244,7 +244,7 @@ public class ResourceServiceImpl implements ResourceService {
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                nlpServiceUrl + "/extract",
+                nerServiceUrl + "/extract",
                 requestEntity,
                 Map.class);
 

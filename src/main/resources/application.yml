@@ -58,5 +58,6 @@ cloudinary:
   api-secret: ${CLOUDINARY_API_SECRET}
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
-  nlp-service-url: ${NPL_SERVICE_URL:http://localhost:8001}
+  ner-service-url: ${NER_SERVICE_URL:http://localhost:8001}
+  search-service-url: ${SEARCH_SERVICE_URL:http://localhost:8000/search}
   default-avatar-public-id: ${DEFAULT_AVT_PUBLIC_ID:bot-cv/avatar/299c1e01-6d3c-462d-a49b-993f51b06cef}

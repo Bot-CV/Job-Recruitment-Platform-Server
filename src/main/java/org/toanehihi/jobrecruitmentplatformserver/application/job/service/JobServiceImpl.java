@@ -2,8 +2,10 @@ package org.toanehihi.jobrecruitmentplatformserver.application.job.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,7 +43,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class JobServiceImpl implements JobService {
     private final JobRepository jobRepository;
@@ -56,9 +58,11 @@ public class JobServiceImpl implements JobService {
     private final OutboxEventService outboxEventService;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
-    private final String SEARCH_SERVICE_URL = "http://localhost:8000/search";
     private final CandidateRepository candidateRepository;
     private final CandidateService candidateService;
+    
+    @Value("${app.search-service-url}")
+    private String searchServiceUrl;
 
     @Override
     public JobDetailResponse getJobDetail(Long id) {
@@ -323,8 +327,7 @@ public class JobServiceImpl implements JobService {
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
             String payload = objectMapper.writeValueAsString(eventPayload);
-            String eventType = action.equals("APPROVE") ? "PUBLISHED" : "UPDATED";
-            outboxEventService.saveOutboxEvent("JOB", job.getId(), eventType, payload);
+            outboxEventService.saveOutboxEvent("JOB", job.getId(), "UPDATED", payload);
             log.debug("Saved outbox event for job moderation: jobId={}, action={}", job.getId(), action);
         } catch (Exception e) {
             log.error("Failed to save outbox event for job moderation: jobId={}, action={}, error={}", 
@@ -346,7 +349,7 @@ public class JobServiceImpl implements JobService {
 
             // Make POST request with proper entity
             JobSearchServiceResponse response = restTemplate.postForObject(
-                    SEARCH_SERVICE_URL,
+                    searchServiceUrl,
                     httpEntity,
                     JobSearchServiceResponse.class
             );
@@ -372,7 +375,7 @@ public class JobServiceImpl implements JobService {
                     .hasPrevious(response.getPagination().isHasPrev())
                     .build();
         } catch (RestClientException e) {
-            log.error("Error calling search service at {}: {}", SEARCH_SERVICE_URL, e.getMessage(), e);
+            log.error("Error calling search service at {}: {}", searchServiceUrl, e.getMessage(), e);
             throw new AppException(ErrorCode.SYSTEM_INTERNAL_ERROR);
         }
     }

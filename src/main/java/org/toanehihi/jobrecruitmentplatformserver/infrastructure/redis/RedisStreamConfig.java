@@ -12,9 +12,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 @Configuration
 public class RedisStreamConfig {
 
-    public static final String STREAM_KEY = "INTERACTION_STREAM";
-    public static final String GROUP = "INTERACTION_GROUP";
-    public static final String DLQ_STREAM_KEY = "INTERACTION_STREAM:DLQ";
+    public static final String STREAM_KEY = "outbox-events";
+    public static final String GROUP = "recommend-service-group";
+    public static final String DLQ_STREAM_KEY = "outbox-events:DLQ";
 
     @Bean
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory cf) {

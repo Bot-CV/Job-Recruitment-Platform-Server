@@ -31,11 +31,33 @@ public class InteractionMessageListener implements StreamListener<String, MapRec
             String recordId = record.getId().getValue();
             Map<String, String> v = record.getValue();
 
+            // Filter chỉ xử lý USER_INTERACTION events
+            String aggregateType = v.get("aggregateType");
+            if (!"USER_INTERACTION".equals(aggregateType)) {
+                log.debug("Skipping non-interaction event: aggregateType={}, recordId={}", 
+                         aggregateType, recordId);
+                // Vẫn phải ACK để message không bị pending
+                redis.opsForStream().acknowledge(STREAM_KEY, GROUP, record.getId());
+                return;
+            }
+            
+            // Parse từ payload thay vì trực tiếp từ record
+            String payloadJson = v.get("payload");
+            Map<String, Object> payload = Jsons.toMap(payloadJson);
+
             Long accountId = Long.valueOf(v.get("accountId"));
             Long jobId = v.get("jobId") == null ? null : Long.valueOf(v.get("jobId"));
-            InteractionEventType eventType = InteractionEventType.valueOf(v.get("eventType"));
-            OffsetDateTime occurredAt = OffsetDateTime.parse(v.get("occurredAt"));
-            Map<String, Object> metadata = Jsons.toMap(v.get("metadata"));
+            
+            // eventType có thể ở payload hoặc top-level
+            String eventTypeStr = payload.getOrDefault("interactionType", v.get("eventType")).toString();
+            InteractionEventType eventType = InteractionEventType.valueOf(eventTypeStr);
+
+            // occurredAt từ payload hoặc top-level
+            String occurredAtStr = payload.getOrDefault("timestamp", v.get("occurredAt")).toString();
+            OffsetDateTime occurredAt = OffsetDateTime.parse(occurredAtStr);
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> metadata = (Map<String, Object>) payload.getOrDefault("metadata", Map.of());
 
             UserInteraction ui = UserInteraction.builder()
                     .externalId(recordId)
@@ -49,6 +71,8 @@ public class InteractionMessageListener implements StreamListener<String, MapRec
             interactionRepository.save(ui);
 
             redis.opsForStream().acknowledge(STREAM_KEY, GROUP, record.getId());
+            log.debug("Saved user interaction: accountId={}, jobId={}, eventType={}", 
+                     accountId, jobId, eventType);
         } catch (Exception ex) {
             try {
                 var payload = record.getValue();
