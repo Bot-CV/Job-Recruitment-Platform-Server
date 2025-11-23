@@ -426,4 +426,14 @@ public class JobServiceImpl implements JobService {
 
         return List.of();
     }
+
+    @Override
+    public List<PopularJobResponse> getPopularJobs(int limit, int recentDays) {
+        return jobRepository.findPopularJobs(limit, recentDays)
+                .stream()
+                .map(row ->
+                        new PopularJobResponse(row.getJobId(), row.getPopularityScore())
+                )
+                .toList();
+    }
 }

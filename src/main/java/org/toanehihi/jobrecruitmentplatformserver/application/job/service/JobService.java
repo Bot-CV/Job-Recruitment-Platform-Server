@@ -31,4 +31,6 @@ public interface JobService {
     List<JobMetadataResponse> getJobMetadata(Set<Long> jobIds);
 
     List<JobResponse> getJobsRecommend(Long userId);
+
+    List<PopularJobResponse> getPopularJobs(int limit, int recentDays);
 }

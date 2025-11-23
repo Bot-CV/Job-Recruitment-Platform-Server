@@ -9,6 +9,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Job;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.JobStatus;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.PopularJobDto;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -53,4 +54,16 @@ public interface JobRepository extends JpaRepository<Job, Long> {
             " left join fetch j.company c\n" +
             " where j.id = :id")
     Optional<Job> findByIdWithRelations(@NonNull Long id);
+
+    @Query(
+            value = """
+                    SELECT job_id, popularity_score
+                    FROM get_popular_jobs(:limit, :recentDays)
+                    """,
+            nativeQuery = true
+    )
+    List<PopularJobDto> findPopularJobs(
+            @Param("limit") int limit,
+            @Param("recentDays") int recentDays
+    );
 }

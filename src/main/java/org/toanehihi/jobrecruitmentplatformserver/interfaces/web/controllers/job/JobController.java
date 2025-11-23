@@ -92,4 +92,14 @@ public class JobController {
                 .data(jobService.recommendJobs(account))
                 .build();
     }
+
+    @GetMapping("/popular")
+    public DataResponse<List<PopularJobResponse>> getPopularJobs(
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "30") int recentDays
+    ) {
+        return DataResponse.<List<PopularJobResponse>>builder()
+                .data(jobService.getPopularJobs(limit, recentDays))
+                .build();
+    }
 }
