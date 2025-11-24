@@ -11,11 +11,10 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.UserInteraction;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.InteractionEventType;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.InteractionRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.redis.Jsons;
+import org.toanehihi.jobrecruitmentplatformserver.infrastructure.redis.RedisStreamConfig;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
-
-import static org.toanehihi.jobrecruitmentplatformserver.infrastructure.redis.RedisStreamConfig.*;
 
 @Slf4j
 @Component
@@ -31,33 +30,12 @@ public class InteractionMessageListener implements StreamListener<String, MapRec
             String recordId = record.getId().getValue();
             Map<String, String> v = record.getValue();
 
-            // Filter chỉ xử lý USER_INTERACTION events
-            String aggregateType = v.get("aggregateType");
-            if (!"USER_INTERACTION".equals(aggregateType)) {
-                log.debug("Skipping non-interaction event: aggregateType={}, recordId={}", 
-                         aggregateType, recordId);
-                // Vẫn phải ACK để message không bị pending
-                redis.opsForStream().acknowledge(STREAM_KEY, GROUP, record.getId());
-                return;
-            }
-            
-            // Parse từ payload thay vì trực tiếp từ record
-            String payloadJson = v.get("payload");
-            Map<String, Object> payload = Jsons.toMap(payloadJson);
-
             Long accountId = Long.valueOf(v.get("accountId"));
             Long jobId = v.get("jobId") == null ? null : Long.valueOf(v.get("jobId"));
-            
-            // eventType có thể ở payload hoặc top-level
-            String eventTypeStr = payload.getOrDefault("interactionType", v.get("eventType")).toString();
-            InteractionEventType eventType = InteractionEventType.valueOf(eventTypeStr);
+            InteractionEventType eventType = InteractionEventType.valueOf(v.get("eventType"));
+            OffsetDateTime occurredAt = OffsetDateTime.parse(v.get("occurredAt"));
 
-            // occurredAt từ payload hoặc top-level
-            String occurredAtStr = payload.getOrDefault("timestamp", v.get("occurredAt")).toString();
-            OffsetDateTime occurredAt = OffsetDateTime.parse(occurredAtStr);
-
-            @SuppressWarnings("unchecked")
-            Map<String, Object> metadata = (Map<String, Object>) payload.getOrDefault("metadata", Map.of());
+            Map<String, Object> metadata = Jsons.toMap(v.get("metadata"));
 
             UserInteraction ui = UserInteraction.builder()
                     .externalId(recordId)
@@ -70,19 +48,24 @@ public class InteractionMessageListener implements StreamListener<String, MapRec
 
             interactionRepository.save(ui);
 
-            redis.opsForStream().acknowledge(STREAM_KEY, GROUP, record.getId());
-            log.debug("Saved user interaction: accountId={}, jobId={}, eventType={}", 
-                     accountId, jobId, eventType);
+            redis.opsForStream().acknowledge(
+                    RedisStreamConfig.INTERACTION_STREAM_KEY,
+                    RedisStreamConfig.INTERACTION_GROUP,
+                    record.getId());
+            log.debug("Saved user interaction: accountId={}, jobId={}, eventType={}",
+                    accountId, jobId, eventType);
         } catch (Exception ex) {
             try {
                 var payload = record.getValue();
                 var dlq = Map.of(
                         "_originalId", record.getId().getValue(),
                         "_reason", ex.getClass().getSimpleName() + ":" + ex.getMessage(),
-                        "payload", Jsons.toJson(payload)
-                );
-                redis.opsForStream().add(StreamRecords.mapBacked(dlq).withStreamKey(DLQ_STREAM_KEY));
-                redis.opsForStream().acknowledge(STREAM_KEY, GROUP, record.getId());
+                        "payload", Jsons.toJson(payload));
+                redis.opsForStream().add(StreamRecords.mapBacked(dlq).withStreamKey(RedisStreamConfig.DLQ_STREAM_KEY));
+                redis.opsForStream().acknowledge(
+                        RedisStreamConfig.INTERACTION_STREAM_KEY,
+                        RedisStreamConfig.INTERACTION_GROUP,
+                        record.getId());
             } catch (Exception ex2) {
                 log.error("Failed to push to DLQ, manual investigation needed. id={}", record.getId(), ex2);
             }

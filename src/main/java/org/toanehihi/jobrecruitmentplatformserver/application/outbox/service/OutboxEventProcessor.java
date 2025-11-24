@@ -15,12 +15,12 @@ import java.util.List;
 @AllArgsConstructor
 @Slf4j
 public class OutboxEventProcessor {
-    
+
     private final OutboxEventRepository outboxEventRepository;
     private final RedisStreamPublisher redisStreamPublisher;
-    
+
     private static final int MAX_ATTEMPTS = 3;
-    
+
     /**
      * Process pending outbox events and publish them to Redis Stream
      * Runs every 5 seconds
@@ -30,21 +30,21 @@ public class OutboxEventProcessor {
     public void processPendingEvents() {
         try {
             List<OutboxEvent> pendingEvents = outboxEventRepository.findPendingEvents(OutboxStatus.PENDING);
-            
+
             if (pendingEvents.isEmpty()) {
                 log.debug("No pending outbox events to process");
                 return;
             }
-            
+
             log.info("Processing {} pending outbox events", pendingEvents.size());
-            
+
             int processed = 0;
             int failed = 0;
-            
+
             for (OutboxEvent event : pendingEvents) {
                 try {
                     boolean success = redisStreamPublisher.publishToStream(event);
-                    
+
                     if (success) {
                         event.setStatus(OutboxStatus.SENT);
                         processed++;
@@ -52,32 +52,32 @@ public class OutboxEventProcessor {
                     } else {
                         event.setAttempts(event.getAttempts() + 1);
                         failed++;
-                        log.warn("Failed to publish outbox event: id={}, attempts={}", 
+                        log.warn("Failed to publish outbox event: id={}, attempts={}",
                                 event.getId(), event.getAttempts());
-                        
+
                         if (event.getAttempts() >= MAX_ATTEMPTS) {
                             event.setStatus(OutboxStatus.DLQ);
-                            log.error("Outbox event moved to DLQ after {} attempts: id={}", 
+                            log.error("Outbox event moved to DLQ after {} attempts: id={}",
                                     MAX_ATTEMPTS, event.getId());
                         } else {
                             event.setStatus(OutboxStatus.FAILED);
                         }
                     }
-                    
+
                     outboxEventRepository.save(event);
-                    
+
                 } catch (Exception e) {
                     event.setAttempts(event.getAttempts() + 1);
                     event.setStatus(event.getAttempts() >= MAX_ATTEMPTS ? OutboxStatus.DLQ : OutboxStatus.FAILED);
                     outboxEventRepository.save(event);
                     failed++;
-                    log.error("Error processing outbox event: id={}, error={}", 
+                    log.error("Error processing outbox event: id={}, error={}",
                             event.getId(), e.getMessage(), e);
                 }
             }
-            
+
             log.info("Outbox event processing completed: processed={}, failed={}", processed, failed);
-            
+
         } catch (Exception e) {
             log.error("Error in outbox event processor: {}", e.getMessage(), e);
         }

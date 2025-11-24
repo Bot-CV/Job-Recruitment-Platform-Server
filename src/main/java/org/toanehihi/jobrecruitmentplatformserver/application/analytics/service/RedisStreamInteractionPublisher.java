@@ -7,13 +7,12 @@ import org.springframework.data.redis.connection.stream.StreamRecords;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.redis.Jsons;
+import org.toanehihi.jobrecruitmentplatformserver.infrastructure.redis.RedisStreamConfig;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.interaction.InteractionEvent;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.toanehihi.jobrecruitmentplatformserver.infrastructure.redis.RedisStreamConfig.STREAM_KEY;
 
 @Component
 @RequiredArgsConstructor
@@ -27,14 +26,15 @@ public class RedisStreamInteractionPublisher implements InteractionEventPublishe
         for (InteractionEvent e : events) {
             Map<String, String> map = new HashMap<>();
             map.put("accountId", String.valueOf(e.getAccountId()));
-            if (e.getJobId() != null) map.put("jobId", String.valueOf(e.getJobId()));
+            if (e.getJobId() != null)
+                map.put("jobId", String.valueOf(e.getJobId()));
             map.put("eventType", e.getEventType().name());
             map.put("occurredAt", e.getOccurredAt().toString());
             map.put("metadata", Jsons.toJson(e.getMetadata()));
 
             MapRecord<String, String, String> record = StreamRecords
                     .mapBacked(map)
-                    .withStreamKey(STREAM_KEY);
+                    .withStreamKey(RedisStreamConfig.INTERACTION_STREAM_KEY);
 
             redis.opsForStream().add(
                     record,

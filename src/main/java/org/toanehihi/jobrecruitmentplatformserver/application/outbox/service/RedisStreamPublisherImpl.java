@@ -36,12 +36,12 @@ public class RedisStreamPublisherImpl implements RedisStreamPublisher {
 
             var record = StreamRecords.newRecord()
                     .ofStrings(fields)
-                    .withStreamKey(RedisStreamConfig.STREAM_KEY);
+                    .withStreamKey(RedisStreamConfig.OUTBOX_STREAM_KEY);
 
             RecordId recordId = redisTemplate.opsForStream().add(record);
 
             log.info("Published outbox event to Redis Stream: eventId={}, recordId={}, streamKey={}",
-                    event.getId(), recordId, RedisStreamConfig.STREAM_KEY);
+                    event.getId(), recordId, RedisStreamConfig.OUTBOX_STREAM_KEY);
 
             return recordId != null;
         } catch (Exception e) {

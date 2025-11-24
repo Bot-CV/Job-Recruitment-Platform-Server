@@ -62,7 +62,9 @@ public class JobServiceImpl implements JobService {
     @Value("${app.search-service-url}")
     private String searchServiceUrl;
 
-    private static final String UPDATE_EVENT = "UPDATE";
+    private static final String CREATE_EVENT = "CREATED";
+    private static final String UPDATE_EVENT = "UPDATED";
+    private static final String DELETE_EVENT = "DELETED";
 
     @Override
     public JobDetailResponse getJobDetail(Long id) {
@@ -120,7 +122,7 @@ public class JobServiceImpl implements JobService {
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent("JOB", job.getId(), "CREATED", payload);
+            outboxEventService.saveOutboxEvent("JOB", job.getId(), CREATE_EVENT, payload);
             log.debug("Saved outbox event for job creation: jobId={}", job.getId());
         } catch (Exception e) {
             log.error("Failed to save outbox event for job creation: jobId={}, error={}",
@@ -389,7 +391,7 @@ public class JobServiceImpl implements JobService {
         try {
             JobEventPayload eventPayload = jobMapper.toEventPayload(job);
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent("JOB", job.getId(), "DELETED", payload);
+            outboxEventService.saveOutboxEvent("JOB", job.getId(), DELETE_EVENT, payload);
             log.debug("Saved outbox event for job deletion: jobId={}", job.getId());
         } catch (Exception e) {
             log.error("Failed to save outbox event for job deletion: jobId={}, error={}",

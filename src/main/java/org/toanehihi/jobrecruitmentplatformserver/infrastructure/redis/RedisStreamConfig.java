@@ -12,9 +12,15 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 @Configuration
 public class RedisStreamConfig {
 
-    public static final String STREAM_KEY = "outbox-events";
-    public static final String GROUP = "recommend-service-group";
-    public static final String DLQ_STREAM_KEY = "outbox-events:DLQ";
+    // Stream cho Outbox events (Job CREATED/UPDATED/DELETED)
+    public static final String OUTBOX_STREAM_KEY = "outbox-events";
+    public static final String OUTBOX_GROUP = "outbox-processor-group";
+
+    // Stream cho User Interaction events (CLICK/APPLY/SAVE)
+    public static final String INTERACTION_STREAM_KEY = "user-interactions";
+    public static final String INTERACTION_GROUP = "interaction-processor-group";
+
+    public static final String DLQ_STREAM_KEY = "dlq-stream";
 
     @Bean
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory cf) {
@@ -22,15 +28,25 @@ public class RedisStreamConfig {
     }
 
     @Bean
-    public ApplicationRunner ensureGroup(StringRedisTemplate template) {
+    public ApplicationRunner ensureStreamGroups(StringRedisTemplate template) {
         return args -> {
-            try {
-                template.opsForStream().createGroup(STREAM_KEY, ReadOffset.latest(), GROUP);
-                log.info("Created stream group '{}' on '{}'", GROUP, STREAM_KEY);
-            } catch (Exception e) {
-                log.info("Stream group '{}' already exists on '{}'", GROUP, STREAM_KEY);
-            }
+            // Create Interaction stream group
+            createStreamGroup(template, INTERACTION_STREAM_KEY, INTERACTION_GROUP);
+
+            // Create Outbox stream group (cho Python consumer)
+            createStreamGroup(template, OUTBOX_STREAM_KEY, OUTBOX_GROUP);
+
+            // Create DLQ stream group
+            createStreamGroup(template, DLQ_STREAM_KEY, "dlq-consumer-group");
         };
     }
-}
 
+    private void createStreamGroup(StringRedisTemplate template, String streamKey, String groupName) {
+        try {
+            template.opsForStream().createGroup(streamKey, ReadOffset.latest(), groupName);
+            log.info("Created stream group '{}' on stream '{}'", groupName, streamKey);
+        } catch (Exception e) {
+            log.info("Stream group '{}' already exists on stream '{}'", groupName, streamKey);
+        }
+    }
+}
