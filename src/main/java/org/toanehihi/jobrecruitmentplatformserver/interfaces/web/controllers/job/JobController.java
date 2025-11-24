@@ -9,7 +9,6 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataRespon
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.*;
 
-import javax.naming.directory.SearchResult;
 import java.util.List;
 import java.util.Set;
 
@@ -82,13 +81,13 @@ public class JobController {
     }
 
     @GetMapping("/recommendation")
-    public DataResponse<?> getRecommendedJobs(
+    public DataResponse<List<JobResponse>> getRecommendedJobs(
             @CurrentUser Account account,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        return DataResponse.builder()
+        return DataResponse.<List<JobResponse>>builder()
                 .data(jobService.recommendJobs(account))
                 .build();
     }

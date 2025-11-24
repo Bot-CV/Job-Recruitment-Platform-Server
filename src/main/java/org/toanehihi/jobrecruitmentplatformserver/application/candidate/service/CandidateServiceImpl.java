@@ -3,7 +3,6 @@ package org.toanehihi.jobrecruitmentplatformserver.application.candidate.service
 import java.time.OffsetDateTime;
 import java.util.*;
 
-import com.cloudinary.utils.Analytics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,10 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.toanehihi.jobrecruitmentplatformserver.application.analytics.service.InteractionService;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudStorageService;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudinaryStorageImpl.CloudinaryFileInfo;
-import org.toanehihi.jobrecruitmentplatformserver.application.resource.ResourceService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
@@ -71,7 +68,6 @@ public class CandidateServiceImpl implements CandidateService {
     private final JobApplicationMapper jobApplicationMapper;
     private final CurrentAccountProvider currentAccountProvider;
     private final CloudStorageService cloudStorageService;
-    private final ResourceService resourceService;
     private final ResourceMapper resourceMapper;
 
     @Override
@@ -214,53 +210,27 @@ public class CandidateServiceImpl implements CandidateService {
     @Override
     public UserProfileBasedResponse getUserProfileBasedData(Long candidateId) {
         Candidate candidate = candidateRepository.findById(candidateId).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_CANDIDATE_NOT_FOUND));
-//        List<Map<String, Object>> allUserResume = resourceRepository.findAllByOwnerIdAndResourceType(candidate.getId(), ResourceType.CV)
-//                .stream()
-//                .map(resource -> {
-//                    return resourceService.analyzeResume(resource.getId());
-//                })
-//                .toList();
 
         Set<String> skills = new HashSet<>();
         Set<String> educations = new HashSet<>();
-        Set<String> experiences = new HashSet<>();
         Set<String> locations = new HashSet<>();
-//        for(Map<String, Object> resumeData : allUserResume) {
-            // Extract skills
-//            List<String> resumeSkills = (List<String>) resumeData.get("SKILLS");
-//            if (resumeSkills != null) {
-//                skills.addAll(resumeSkills);
-//            }
             if (!candidate.getSkills().isEmpty()){
                 skills.addAll(candidate.getSkills().stream().map(cs -> cs.getSkill().getName()).toList());
             }
-
-            // Extract educations
-//            List<String> resumeEducations = (List<String>) resumeData.get("EDUCATION");
-//            if (resumeEducations != null) {
-//                educations.addAll(resumeEducations);
-//            }
-
-            // Extract locations
-//            List<String> resumeLocations = (List<String>) resumeData.get("LOCATION");
-//            if (resumeLocations != null) {
-//                locations.addAll(resumeLocations);
-//            }
             if (candidate.getLocation().getProvinceCity() != null) {
                 locations.add(candidate.getLocation().getProvinceCity());
             }
-//        }
-        UserProfileBasedResponse response = UserProfileBasedResponse.builder()
+            
+        return UserProfileBasedResponse.builder()
                 .id(candidate.getId())
                 .skills(skills)
                 .educations(educations)
                 .location(locations)
                 .preferences(Map.of(
-                        "remote", candidate.getRemotePref() != null ? candidate.getRemotePref() : false,
-                        "relocation", candidate.getRelocationPref() != null ? candidate.getRelocationPref() : false
+                        "remote", candidate.getRemotePref() != null && candidate.getRemotePref(),
+                        "relocation", candidate.getRelocationPref() != null && candidate.getRelocationPref()
                 ))
                 .build();
-        return response;
     }
 
     // Private methods

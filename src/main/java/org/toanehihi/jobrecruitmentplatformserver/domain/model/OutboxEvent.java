@@ -34,13 +34,16 @@ public class OutboxEvent {
     private String payload;         // JSON string
 
     @Column(nullable = false)
+    @Builder.Default
     private OffsetDateTime occurredAt = OffsetDateTime.now();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private OutboxStatus status = OutboxStatus.PENDING;
 
     @Column(nullable = false)
+    @Builder.Default
     private int attempts = 0;
 
     @Column(nullable = false, columnDefinition = "uuid default gen_random_uuid()")

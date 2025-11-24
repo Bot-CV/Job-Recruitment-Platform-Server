@@ -16,7 +16,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClientException;
-import org.toanehihi.jobrecruitmentplatformserver.application.analytics.service.InteractionService;
 import org.toanehihi.jobrecruitmentplatformserver.application.candidate.service.CandidateService;
 import org.toanehihi.jobrecruitmentplatformserver.application.outbox.service.OutboxEventService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
@@ -54,24 +53,22 @@ public class JobServiceImpl implements JobService {
     private final RecruiterRepository recruiterRepository;
     private final JobApplicationRepository jobApplicationRepository;
     private final JobDescriptionRepository jobDescriptionRepository;
-    private final InteractionService analyticService;
     private final OutboxEventService outboxEventService;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
     private final CandidateRepository candidateRepository;
     private final CandidateService candidateService;
-    
+
     @Value("${app.search-service-url}")
     private String searchServiceUrl;
 
+    private static final String UPDATE_EVENT = "UPDATE";
+
     @Override
     public JobDetailResponse getJobDetail(Long id) {
-        JobDetailResponse jobDetailResponse = jobRepository.findById(id)
+        return jobRepository.findById(id)
                 .map(jobMapper::toJobDetailResponse)
                 .orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
-
-//        analyticService.trackJobViewed(null, id);
-        return jobDetailResponse;
     }
 
     @Override
@@ -100,14 +97,12 @@ public class JobServiceImpl implements JobService {
                 .orElseThrow(() -> new AppException(ErrorCode.JOB_ROLE_NOT_FOUND));
 
         Set<Skill> skills = request.getSkills().stream()
-                .map(skill -> {
-                    return skillRepository.findByName(skill)
-                            .orElseGet(() -> {
-                                Skill newSkill = new Skill();
-                                newSkill.setName(skill);
-                                return skillRepository.save(newSkill);
-                            });
-                })
+                .map(skill -> skillRepository.findByName(skill)
+                        .orElseGet(() -> {
+                            Skill newSkill = new Skill();
+                            newSkill.setName(skill);
+                            return skillRepository.save(newSkill);
+                        }))
                 .collect(Collectors.toSet());
 
         job.setCompany(recruiter.getCompany());
@@ -120,7 +115,7 @@ public class JobServiceImpl implements JobService {
 
         job = jobRepository.save(job);
         jobDescriptionRepository.save(job.getDescription());
-        
+
         // Save outbox event for job creation
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
@@ -128,10 +123,10 @@ public class JobServiceImpl implements JobService {
             outboxEventService.saveOutboxEvent("JOB", job.getId(), "CREATED", payload);
             log.debug("Saved outbox event for job creation: jobId={}", job.getId());
         } catch (Exception e) {
-            log.error("Failed to save outbox event for job creation: jobId={}, error={}", 
+            log.error("Failed to save outbox event for job creation: jobId={}, error={}",
                     job.getId(), e.getMessage(), e);
         }
-        
+
         return jobMapper.toResponse(job);
     }
 
@@ -154,18 +149,18 @@ public class JobServiceImpl implements JobService {
         updateJobDescription(job, request);
 
         jobRepository.save(job);
-        
+
         // Save outbox event for job update
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent("JOB", job.getId(), "UPDATED", payload);
+            outboxEventService.saveOutboxEvent("JOB", job.getId(), UPDATE_EVENT, payload);
             log.debug("Saved outbox event for job update: jobId={}", job.getId());
         } catch (Exception e) {
-            log.error("Failed to save outbox event for job update: jobId={}, error={}", 
+            log.error("Failed to save outbox event for job update: jobId={}, error={}",
                     job.getId(), e.getMessage(), e);
         }
-        
+
         return jobMapper.toResponse(job);
     }
 
@@ -219,14 +214,12 @@ public class JobServiceImpl implements JobService {
 
         if (request.getSkills() != null && !request.getSkills().isEmpty()) {
             Set<Skill> skills = request.getSkills().stream()
-                    .map(skill -> {
-                        return skillRepository.findByName(skill)
-                                .orElseGet(() -> {
-                                    Skill newSkill = new Skill();
-                                    newSkill.setName(skill);
-                                    return skillRepository.save(newSkill);
-                                });
-                    })
+                    .map(skill -> skillRepository.findByName(skill)
+                            .orElseGet(() -> {
+                                Skill newSkill = new Skill();
+                                newSkill.setName(skill);
+                                return skillRepository.save(newSkill);
+                            }))
                     .collect(Collectors.toSet());
             job.setSkills(skills);
         }
@@ -285,20 +278,20 @@ public class JobServiceImpl implements JobService {
         }
         job.setStatus(JobStatus.CANCELED);
         log.info(job.getStatus().toString());
-        
+
         job = jobRepository.save(job);
-        
+
         // Save outbox event for job cancellation
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent("JOB", job.getId(), "UPDATED", payload);
+            outboxEventService.saveOutboxEvent("JOB", job.getId(), UPDATE_EVENT, payload);
             log.debug("Saved outbox event for job cancellation: jobId={}", job.getId());
         } catch (Exception e) {
-            log.error("Failed to save outbox event for job cancellation: jobId={}, error={}", 
+            log.error("Failed to save outbox event for job cancellation: jobId={}, error={}",
                     job.getId(), e.getMessage(), e);
         }
-        
+
         return jobMapper.toResponse(job);
     }
 
@@ -322,18 +315,18 @@ public class JobServiceImpl implements JobService {
         }
         job.setStatus(action.equals("APPROVE") ? JobStatus.PUBLISHED : JobStatus.CANCELED);
         job = jobRepository.save(job);
-        
+
         // Save outbox event for job moderation
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent("JOB", job.getId(), "UPDATED", payload);
+            outboxEventService.saveOutboxEvent("JOB", job.getId(), UPDATE_EVENT, payload);
             log.debug("Saved outbox event for job moderation: jobId={}, action={}", job.getId(), action);
         } catch (Exception e) {
-            log.error("Failed to save outbox event for job moderation: jobId={}, action={}, error={}", 
+            log.error("Failed to save outbox event for job moderation: jobId={}, action={}, error={}",
                     job.getId(), action, e.getMessage(), e);
         }
-        
+
         return jobMapper.toResponse(job);
     }
 
@@ -351,8 +344,7 @@ public class JobServiceImpl implements JobService {
             JobSearchServiceResponse response = restTemplate.postForObject(
                     searchServiceUrl,
                     httpEntity,
-                    JobSearchServiceResponse.class
-            );
+                    JobSearchServiceResponse.class);
 
             List<JobResponse> jobs = new ArrayList<>();
             if (!response.getJobIds().isEmpty()) {
@@ -363,9 +355,8 @@ public class JobServiceImpl implements JobService {
 
                 jobs = response.getJobIds().stream()
                         .map(jobMap::get)
-                        .collect(Collectors.toList());
+                        .toList();
             }
-
 
             return PageResult.<JobResponse>builder()
                     .content(jobs)
@@ -393,7 +384,7 @@ public class JobServiceImpl implements JobService {
     public void deleteJob(Long id) {
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
-        
+
         // Save outbox event for job deletion before deleting
         try {
             JobEventPayload eventPayload = jobMapper.toEventPayload(job);
@@ -401,10 +392,10 @@ public class JobServiceImpl implements JobService {
             outboxEventService.saveOutboxEvent("JOB", job.getId(), "DELETED", payload);
             log.debug("Saved outbox event for job deletion: jobId={}", job.getId());
         } catch (Exception e) {
-            log.error("Failed to save outbox event for job deletion: jobId={}, error={}", 
+            log.error("Failed to save outbox event for job deletion: jobId={}, error={}",
                     job.getId(), e.getMessage(), e);
         }
-        
+
         jobRepository.deleteById(id);
     }
 
@@ -415,8 +406,8 @@ public class JobServiceImpl implements JobService {
                         .jobId(job.getId())
                         .requiredSkills(
                                 job.getSkills().stream()
-                                .map(Skill::getName)
-                                .collect(Collectors.toSet()))
+                                        .map(Skill::getName)
+                                        .collect(Collectors.toSet()))
                         .build())
                 .toList();
     }
