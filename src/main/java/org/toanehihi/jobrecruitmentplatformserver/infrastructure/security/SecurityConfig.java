@@ -62,7 +62,7 @@ public class SecurityConfig {
             // Jobs
             "/api/jobs/public/**",
             "/api/jobs/public/detail/**",
-            "/api/jobs/category",
+            "/api/jobs/categories/public/**",
             "/api/jobs/public/search",
 
             // Companies
