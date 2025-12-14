@@ -38,8 +38,8 @@ public class JobCategoryController {
                 .build();
     }
 
-    @PostMapping("/public/{jobFamilyId}")
-    public DataResponse<SubFamily> getJobFamilyById(@PathVariable Long jobFamilyId,
+    @PostMapping("/{jobFamilyId}")
+    public DataResponse<SubFamily> createSubFamily(@PathVariable Long jobFamilyId,
             @RequestBody CreateCategoryRequest request) {
         return DataResponse.<SubFamily>builder()
                 .data(jobCategoryService.createSubFamily(jobFamilyId, request))
