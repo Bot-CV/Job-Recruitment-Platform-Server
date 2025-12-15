@@ -34,10 +34,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.*;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -65,6 +62,9 @@ public class JobServiceImpl implements JobService {
     private static final String CREATE_EVENT = "CREATED";
     private static final String UPDATE_EVENT = "UPDATED";
     private static final String DELETE_EVENT = "DELETED";
+
+    @Value("${app.recommend-service-url}")
+    private String recommendServiceUrl;
 
     @Override
     public JobDetailResponse getJobDetail(Long id) {
@@ -415,8 +415,58 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public List<JobResponse> getJobsRecommend(Long userId) {
+    public List<JobResponse> getJobsRecommend(Long userId, int topK) {
+        try {
+            StringBuilder urlBuilder = new StringBuilder(recommendServiceUrl);
+            urlBuilder.append("?top_k=").append(topK);
 
-        return List.of();
+            if (userId != null && userId != 0) {
+                urlBuilder.append("&user_id=").append(userId);
+            }
+
+            JobRecommendationServiceResponse response = restTemplate.getForObject(
+                    urlBuilder.toString(),
+                    JobRecommendationServiceResponse.class
+            );
+
+            if (response == null || response.getCode() != 1000 || response.getData() == null) {
+                return List.of();
+            }
+
+            List<Long> jobIds = response.getData().getRecommendations().stream()
+                    .map(JobRecommendationItem::getJobId)
+                    .toList();
+
+            if (jobIds.isEmpty()) {
+                return List.of();
+            }
+
+            List<Job> jobs = jobRepository.findAllById(jobIds);
+            Map<Long, JobResponse> jobMap = jobs.stream()
+                    .map(jobMapper::toResponse)
+                    .collect(Collectors.toMap(JobResponse::getId, Function.identity()));
+
+            return jobIds.stream()
+                    .map(jobMap::get)
+                    .filter(Objects::nonNull)
+                    .toList();
+
+        } catch (RestClientException e) {
+            log.error("Error calling recommendation service at {}: {}", recommendServiceUrl, e.getMessage(), e);
+            return List.of();
+        } catch (Exception e) {
+            log.error("Unexpected error in getJobsRecommend: {}", e.getMessage(), e);
+            return List.of();
+        }
+    }
+
+    @Override
+    public List<PopularJobResponse> getPopularJobs(int limit, int recentDays) {
+        return jobRepository.findPopularJobs(limit, recentDays)
+                .stream()
+                .map(row ->
+                        new PopularJobResponse(row.getJobId(), row.getPopularityScore())
+                )
+                .toList();
     }
 }

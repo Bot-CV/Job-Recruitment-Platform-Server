@@ -1,6 +1,7 @@
 package org.toanehihi.jobrecruitmentplatformserver.interfaces.web.controllers.job;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.toanehihi.jobrecruitmentplatformserver.application.job.service.JobService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
@@ -15,6 +16,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/jobs")
 @AllArgsConstructor
+@Slf4j
 public class JobController {
     private final JobService jobService;
 
@@ -29,8 +31,8 @@ public class JobController {
                 .build();
     }
 
-    @GetMapping("/metadata")
-    public DataResponse<List<JobMetadataResponse>> getJobsMetaData(@RequestParam Set<Long> jobIds) {
+    @GetMapping("public/metadata")
+    public DataResponse<List<JobMetadataResponse>> getJobsMetaData(@RequestBody Set<Long> jobIds) {
         return DataResponse.<List<JobMetadataResponse>>builder()
                 .data(jobService.getJobMetadata(jobIds))
                 .build();
@@ -89,6 +91,26 @@ public class JobController {
             @RequestParam(defaultValue = "asc") String sortDir) {
         return DataResponse.<List<JobResponse>>builder()
                 .data(jobService.recommendJobs(account))
+                .build();
+    }
+
+    @GetMapping("/public/recommend")
+    public DataResponse<List<JobResponse>> getJobsRecommend(
+            @RequestParam(defaultValue = "0") Long userId,
+            @RequestParam(defaultValue = "20") int limit
+    ) {
+        return DataResponse.<List<JobResponse>>builder()
+                .data(jobService.getJobsRecommend(userId, limit))
+                .build();
+    }
+
+    @GetMapping("public/popular")
+    public DataResponse<List<PopularJobResponse>> getPopularJobs(
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestParam(defaultValue = "30") int recentDays
+    ) {
+        return DataResponse.<List<PopularJobResponse>>builder()
+                .data(jobService.getPopularJobs(limit, recentDays))
                 .build();
     }
 }

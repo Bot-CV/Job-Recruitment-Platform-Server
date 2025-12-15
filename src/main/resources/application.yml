@@ -60,4 +60,5 @@ app:
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
   ner-service-url: ${NER_SERVICE_URL:http://localhost:8001}
   search-service-url: ${SEARCH_SERVICE_URL:http://localhost:8000/search}
+  recommend-service-url: ${RECOMMENDATION_SERVICE_URL:http://localhost:8000/recommend}
   default-avatar-public-id: ${DEFAULT_AVT_PUBLIC_ID:bot-cv/avatar/299c1e01-6d3c-462d-a49b-993f51b06cef}
