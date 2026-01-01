@@ -35,10 +35,7 @@ public class OutboxReconciliationService {
     /**
      * Reconcile jobs vs outbox events: if a job has no corresponding outbox event,
      * create one and publish to Redis Stream.
-     * Runs every hour.
      */
-    @Scheduled(cron = "0 0 0 * * Sat,Sun")
-//    @Scheduled(cron = "0 * * * * *")
     public void reconcileMissingJobEvents() {
         try {
             log.info("Starting outbox reconciliation for JOBs");

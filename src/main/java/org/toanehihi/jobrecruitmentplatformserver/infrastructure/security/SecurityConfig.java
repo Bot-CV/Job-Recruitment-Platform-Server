@@ -72,7 +72,8 @@ public class SecurityConfig {
             "/api/resources/resumes/analyze/**",
 
             // Testing
-            "/api/candidates/profile/**"
+            "/api/candidates/profile/**",
+            "/api/sync"
     };
 
     @Bean
