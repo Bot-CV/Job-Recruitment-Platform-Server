@@ -34,7 +34,7 @@ public class JobMapper {
                 .id(job.getId())
                 .title(job.getTitle())
                 .company(job.getCompany().getName())
-                .companyLogoUrl(companyLogoUrl)
+                .logo(companyLogoUrl)
                 .jobRole(job.getJobRole().getName())
                 .seniority(job.getSeniority())
                 .minExperienceYears(job.getMinExperienceYears())
