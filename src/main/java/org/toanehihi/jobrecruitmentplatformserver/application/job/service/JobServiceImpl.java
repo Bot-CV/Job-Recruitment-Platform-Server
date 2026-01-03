@@ -341,7 +341,7 @@ public class JobServiceImpl implements JobService {
 
             // Make POST request with proper entity
             JobSearchServiceResponse response = restTemplate.postForObject(
-                    searchAndRecommendationServiceUrl,
+                    searchAndRecommendationServiceUrl + "/search",
                     httpEntity,
                     JobSearchServiceResponse.class);
 
@@ -415,6 +415,7 @@ public class JobServiceImpl implements JobService {
     public List<JobResponse> getJobsRecommend(Long userId, int topK) {
         try {
             StringBuilder urlBuilder = new StringBuilder(searchAndRecommendationServiceUrl);
+            urlBuilder.append(("/recommend"));
             urlBuilder.append("?top_k=").append(topK);
 
             if (userId != null && userId != 0) {
@@ -437,8 +438,10 @@ public class JobServiceImpl implements JobService {
             if (jobIds.isEmpty()) {
                 return List.of();
             }
-
-            List<Job> jobs = jobRepository.findAllById(jobIds);
+            List<Job> jobs = new ArrayList<>();
+            for (Long jobId : jobIds) {
+                jobs.add(jobRepository.findById(jobId).get());
+            }
             Map<Long, JobResponse> jobMap = jobs.stream()
                     .map(jobMapper::toResponse)
                     .collect(Collectors.toMap(JobResponse::getId, Function.identity()));

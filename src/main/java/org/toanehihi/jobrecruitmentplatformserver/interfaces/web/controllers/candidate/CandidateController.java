@@ -15,6 +15,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataRespon
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateRequest;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.CandidateResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.UserProfileBasedResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicationResponse;
 import lombok.RequiredArgsConstructor;
@@ -97,8 +98,8 @@ public class CandidateController {
     }
 
     @GetMapping("/profile/{candidateId}")
-    DataResponse<?> getUserProfileBasedData(@PathVariable Long candidateId) {
-        return DataResponse.builder()
+    DataResponse<UserProfileBasedResponse> getUserProfileBasedData(@PathVariable Long candidateId) {
+        return DataResponse.<UserProfileBasedResponse>builder()
                 .data(candidateService.getUserProfileBasedData(candidateId))
                 .build();
     }
