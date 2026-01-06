@@ -8,6 +8,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicationResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResumeAnalysisResponse;
 
 public interface CandidateService {
 
@@ -28,4 +29,6 @@ public interface CandidateService {
     PageResult<ResourceResponse> getCandidateResumes(int page, int size, String sortBy, String sortDir);
 
     UserProfileBasedResponse getUserProfileBasedData(Long candidateId);
+
+    void updateProfileFromCV(Long accountId, ResumeAnalysisResponse cvData);
 }

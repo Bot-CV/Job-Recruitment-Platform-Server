@@ -15,18 +15,19 @@ import java.util.UUID;
 @AllArgsConstructor
 @Slf4j
 public class OutboxEventServiceImpl implements OutboxEventService {
-    
+
     private final OutboxEventRepository outboxEventRepository;
-    
+
     @Override
     @Transactional
     public OutboxEvent saveOutboxEvent(String aggregateType, Long aggregateId, String eventType, String payload) {
         return saveOutboxEvent(aggregateType, aggregateId, eventType, payload, UUID.randomUUID());
     }
-    
+
     @Override
     @Transactional
-    public OutboxEvent saveOutboxEvent(String aggregateType, Long aggregateId, String eventType, String payload, UUID traceId) {
+    public OutboxEvent saveOutboxEvent(String aggregateType, Long aggregateId, String eventType, String payload,
+            UUID traceId) {
         OutboxEvent event = OutboxEvent.builder()
                 .aggregateType(aggregateType)
                 .aggregateId(aggregateId)
@@ -37,11 +38,11 @@ public class OutboxEventServiceImpl implements OutboxEventService {
                 .status(OutboxStatus.PENDING)
                 .attempts(0)
                 .build();
-        
+
         OutboxEvent saved = outboxEventRepository.save(event);
-        log.debug("Saved outbox event: id={}, aggregateType={}, aggregateId={}, eventType={}", 
+        log.debug("Saved outbox event: id={}, aggregateType={}, aggregateId={}, eventType={}",
                 saved.getId(), aggregateType, aggregateId, eventType);
-        
+
         return saved;
     }
 }

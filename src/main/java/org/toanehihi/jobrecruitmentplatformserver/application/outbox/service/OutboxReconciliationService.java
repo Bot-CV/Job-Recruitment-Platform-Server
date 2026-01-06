@@ -3,7 +3,7 @@ package org.toanehihi.jobrecruitmentplatformserver.application.outbox.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +43,8 @@ public class OutboxReconciliationService {
             // Collect all job IDs
             List<Job> allJobs = jobRepository.findAll()
                     .stream()
-                    .filter(job -> job != null && (job.getStatus() == JobStatus.PENDING || job.getStatus() == JobStatus.PUBLISHED))
+                    .filter(job -> job != null
+                            && (job.getStatus() == JobStatus.PENDING || job.getStatus() == JobStatus.PUBLISHED))
                     .toList();
             Set<Long> jobIds = new HashSet<>();
             for (Job job : allJobs) {
@@ -56,13 +57,15 @@ public class OutboxReconciliationService {
             // Find missing
             int created = 0;
             for (Job job : allJobs) {
-                if (job == null || job.getId() == null) continue;
+                if (job == null || job.getId() == null)
+                    continue;
                 if (existingOutboxJobIds != null && existingOutboxJobIds.contains(job.getId())) {
                     continue;
                 }
 
                 boolean ok = processSingleJob(job);
-                if (ok) created++;
+                if (ok)
+                    created++;
             }
 
             log.info("Outbox reconciliation completed. New events created: {}", created);
@@ -98,5 +101,3 @@ public class OutboxReconciliationService {
         }
     }
 }
-
-

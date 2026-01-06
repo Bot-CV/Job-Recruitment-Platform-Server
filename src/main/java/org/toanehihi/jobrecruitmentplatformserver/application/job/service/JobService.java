@@ -24,8 +24,6 @@ public interface JobService {
 
     PageResult<JobResponse> searchJobByTitle(JobSearchRequest request);
 
-    List<JobResponse> recommendJobs(Account account);
-
     void deleteJob(Long id);
 
     List<JobMetadataResponse> getJobMetadata(Set<Long> jobIds);

@@ -16,7 +16,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClientException;
-import org.toanehihi.jobrecruitmentplatformserver.application.candidate.service.CandidateService;
 import org.toanehihi.jobrecruitmentplatformserver.application.outbox.service.OutboxEventService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
@@ -30,7 +29,6 @@ import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.rep
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.annotation.HasAdminRole;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.annotation.HasRecruiterRole;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
-import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.UserProfileBasedResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.*;
 
 import java.time.OffsetDateTime;
@@ -53,11 +51,11 @@ public class JobServiceImpl implements JobService {
     private final OutboxEventService outboxEventService;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
-    private final CandidateRepository candidateRepository;
-    private final CandidateService candidateService;
+    @Value("${app.search-service-url}")
+    private String searchServiceUrl;
 
-    @Value("${app.search-and-recommendation-service-url}")
-    private String searchAndRecommendationServiceUrl;
+    @Value("${app.recommendation-service-url}")
+    private String recommendationServiceUrl;
 
     private static final String CREATE_EVENT = "CREATED";
     private static final String UPDATE_EVENT = "UPDATED";
@@ -341,7 +339,7 @@ public class JobServiceImpl implements JobService {
 
             // Make POST request with proper entity
             JobSearchServiceResponse response = restTemplate.postForObject(
-                    searchAndRecommendationServiceUrl,
+                    searchServiceUrl,
                     httpEntity,
                     JobSearchServiceResponse.class);
 
@@ -365,17 +363,9 @@ public class JobServiceImpl implements JobService {
                     .hasPrevious(response.getPagination().isHasPrev())
                     .build();
         } catch (RestClientException e) {
-            log.error("Error calling search service at {}: {}", searchAndRecommendationServiceUrl, e.getMessage(), e);
+            log.error("Error calling search service at {}: {}", searchServiceUrl, e.getMessage(), e);
             throw new AppException(ErrorCode.SYSTEM_INTERNAL_ERROR);
         }
-    }
-
-    @Override
-    public List<JobResponse> recommendJobs(Account account) {
-        Candidate candidate = candidateRepository.findByAccountId(account.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_CANDIDATE_NOT_FOUND));
-        UserProfileBasedResponse userProfile = candidateService.getUserProfileBasedData(candidate.getId());
-        return List.of();
     }
 
     @Override
@@ -414,7 +404,7 @@ public class JobServiceImpl implements JobService {
     @Override
     public List<JobResponse> getJobsRecommend(Long userId, int topK) {
         try {
-            StringBuilder urlBuilder = new StringBuilder(searchAndRecommendationServiceUrl);
+            StringBuilder urlBuilder = new StringBuilder(recommendationServiceUrl);
             urlBuilder.append("?top_k=").append(topK);
 
             if (userId != null && userId != 0) {
@@ -423,8 +413,7 @@ public class JobServiceImpl implements JobService {
 
             JobRecommendationServiceResponse response = restTemplate.getForObject(
                     urlBuilder.toString(),
-                    JobRecommendationServiceResponse.class
-            );
+                    JobRecommendationServiceResponse.class);
 
             if (response == null || response.getCode() != 1000 || response.getData() == null) {
                 return List.of();
@@ -449,7 +438,7 @@ public class JobServiceImpl implements JobService {
                     .toList();
 
         } catch (RestClientException e) {
-            log.error("Error calling recommendation service at {}: {}", searchAndRecommendationServiceUrl, e.getMessage(), e);
+            log.error("Error calling recommendation service at {}: {}", recommendationServiceUrl, e.getMessage(), e);
             return List.of();
         } catch (Exception e) {
             log.error("Unexpected error in getJobsRecommend: {}", e.getMessage(), e);
@@ -461,9 +450,7 @@ public class JobServiceImpl implements JobService {
     public List<PopularJobResponse> getPopularJobs(int limit, int recentDays) {
         return jobRepository.findPopularJobs(limit, recentDays)
                 .stream()
-                .map(row ->
-                        new PopularJobResponse(row.getJobId(), row.getPopularityScore())
-                )
+                .map(row -> new PopularJobResponse(row.getJobId(), row.getPopularityScore()))
                 .toList();
     }
 }

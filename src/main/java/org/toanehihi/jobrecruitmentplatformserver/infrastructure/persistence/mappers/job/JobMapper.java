@@ -1,7 +1,5 @@
 package org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Component;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.JobDescription;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.skill.SkillMapper;

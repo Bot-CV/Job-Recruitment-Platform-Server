@@ -5,6 +5,7 @@ spring:
     import: optional:file:.env[.properties]
   flyway:
     enabled: true
+    baseline-on-migrate: true
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?stringtype=unspecified
     username: ${POSTGRES_USERNAME}
@@ -59,5 +60,6 @@ cloudinary:
 app:
   frontend-url: ${FRONTEND_URL}
   ner-service-url: ${NER_SERVICE_URL}
-  search-and-recommendation-service-url: ${SEARCH_AND_RECOMMENDATION_SERVICE_URL}
+  search-service-url: ${SEARCH_SERVICE_URL}
+  recommendation-service-url: ${RECOMMENDATION_SERVICE_URL}
   default-avatar-public-id: ${DEFAULT_AVT_PUBLIC_ID}

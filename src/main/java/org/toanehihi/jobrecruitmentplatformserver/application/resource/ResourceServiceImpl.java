@@ -13,6 +13,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.toanehihi.jobrecruitmentplatformserver.application.candidate.service.CandidateService;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudStorageService;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudinaryStorageImpl;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudinaryStorageImpl.CloudinaryFileInfo;
@@ -29,13 +30,13 @@ import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.rep
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.annotation.HasRecruiterRole;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.FileData;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResumeAnalysisResponse;
 
 import jakarta.transaction.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.LongConsumer;
@@ -50,6 +51,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final AttestationResourceRepository attestationResourceRepository;
     private final ResourceMapper resourceMapper;
     private final CloudStorageService cloudStorageService;
+    private final CandidateService candidateService;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -223,9 +225,9 @@ public class ResourceServiceImpl implements ResourceService {
         return resourceMapper.toResponse(savedResource);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Map<String, Object> analyzeResume(Long resourceId) {
+    @Transactional
+    public ResumeAnalysisResponse analyzeResume(Long resourceId) {
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
         if (resource.getResourceType() != ResourceType.CV) {
@@ -237,18 +239,32 @@ public class ResourceServiceImpl implements ResourceService {
         body.add("file", new ByteArrayResource(fileData.getContent()) {
             @Override
             public String getFilename() {
-                return resource.getName(); // Important: provide filename
+                return resource.getName();
             }
         });
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-        ResponseEntity<Map> response = restTemplate.postForEntity(
+        ResponseEntity<NerExtractResponse> response = restTemplate.postForEntity(
                 nerServiceUrl + "/extract",
                 requestEntity,
-                Map.class);
+                NerExtractResponse.class);
 
-        return response.getBody();
+        NerExtractResponse wrapper = response.getBody();
+        ResumeAnalysisResponse analysisResult = (wrapper != null) ? wrapper.entities : null;
+
+        if (analysisResult != null) {
+            Long candidateId = resource.getOwnerId();
+
+            Candidate candidate = candidateRepository.findById(candidateId)
+                    .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_CANDIDATE_NOT_FOUND));
+
+            candidateService.updateProfileFromCV(candidate.getAccount().getId(), analysisResult);
+        }
+        return analysisResult;
+    }
+
+    public record NerExtractResponse(ResumeAnalysisResponse entities) {
     }
 }

@@ -1,11 +1,10 @@
 package org.toanehihi.jobrecruitmentplatformserver.application.resource;
 
 import java.util.List;
-import java.util.Map;
-
 import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResumeAnalysisResponse;
 
 public interface ResourceService {
     ResourceResponse updateUserAvatar(Account account, MultipartFile avatar);
@@ -18,5 +17,5 @@ public interface ResourceService {
 
     ResourceResponse uploadResume(Account account, MultipartFile file);
 
-    Map<String, Object> analyzeResume(Long resourceId);
+    ResumeAnalysisResponse analyzeResume(Long resourceId);
 }

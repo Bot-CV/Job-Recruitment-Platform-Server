@@ -25,6 +25,7 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.SavedJob;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Skill;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ApplicationStatus;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ResourceType;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.SeniorityLevel;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.candidate.CandidateMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.JobApplicationMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.SavedJobMapper;
@@ -45,6 +46,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.candidate.
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.SavedJobResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.job.application.JobApplicationResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResumeAnalysisResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.skill.CandidateSkillRequest;
 
 import jakarta.transaction.Transactional;
@@ -196,12 +198,13 @@ public class CandidateServiceImpl implements CandidateService {
                 savedJobPage.map(savedJobMapper::toResponse));
     }
 
-    @Override
+    @Override   
     public PageResult<ResourceResponse> getCandidateResumes(int page, int size, String sortBy, String sortDir) {
         Candidate candidate = getCurrentCandidate();
         Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
         Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<ResourceResponse> resourcePage = resourceRepository.findByOwnerIdAndResourceType(candidate.getId(), ResourceType.CV, pageable)
+        Page<ResourceResponse> resourcePage = resourceRepository
+                .findByOwnerIdAndResourceType(candidate.getId(), ResourceType.CV, pageable)
                 .map(resourceMapper::toResponse);
 
         return PageResult.from(resourcePage);
@@ -209,18 +212,19 @@ public class CandidateServiceImpl implements CandidateService {
 
     @Override
     public UserProfileBasedResponse getUserProfileBasedData(Long candidateId) {
-        Candidate candidate = candidateRepository.findById(candidateId).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_CANDIDATE_NOT_FOUND));
+        Candidate candidate = candidateRepository.findById(candidateId)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_CANDIDATE_NOT_FOUND));
 
         Set<String> skills = new HashSet<>();
         Set<String> educations = new HashSet<>();
         Set<String> locations = new HashSet<>();
-            if (!candidate.getSkills().isEmpty()){
-                skills.addAll(candidate.getSkills().stream().map(cs -> cs.getSkill().getName()).toList());
-            }
-            if (candidate.getLocation().getProvinceCity() != null) {
-                locations.add(candidate.getLocation().getProvinceCity());
-            }
-            
+        if (!candidate.getSkills().isEmpty()) {
+            skills.addAll(candidate.getSkills().stream().map(cs -> cs.getSkill().getName()).toList());
+        }
+        if (candidate.getLocation().getProvinceCity() != null) {
+            locations.add(candidate.getLocation().getProvinceCity());
+        }
+
         return UserProfileBasedResponse.builder()
                 .id(candidate.getId())
                 .skills(skills)
@@ -228,8 +232,7 @@ public class CandidateServiceImpl implements CandidateService {
                 .location(locations)
                 .preferences(Map.of(
                         "remote", candidate.getRemotePref() != null && candidate.getRemotePref(),
-                        "relocation", candidate.getRelocationPref() != null && candidate.getRelocationPref()
-                ))
+                        "relocation", candidate.getRelocationPref() != null && candidate.getRelocationPref()))
                 .build();
     }
 
@@ -238,5 +241,75 @@ public class CandidateServiceImpl implements CandidateService {
         Account account = currentAccountProvider.getCurrentAccount();
         return candidateRepository.findByAccountId(account.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.AUTH_UNAUTHORIZED));
+    }
+
+    @Override
+    public void updateProfileFromCV(Long accountId, ResumeAnalysisResponse cvData) {
+        Candidate candidate = candidateRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_CANDIDATE_NOT_FOUND));
+
+        int years = cvData.getParsedYearsOfExperience();
+        if (years > 0) {
+            candidate.setSeniority(calculateSeniority(years));
+        } else if (candidate.getSeniority() == null) {
+            candidate.setSeniority(SeniorityLevel.INTERN);
+        }
+
+        if (cvData.getSkills() != null && !cvData.getSkills().isEmpty()) {
+            updateCandidateSkills(candidate, cvData.getSkills());
+        }
+
+        String newBio = buildBioFromCV(cvData);
+        candidate.setBio(newBio);
+        candidateRepository.save(candidate);
+    }
+
+    private SeniorityLevel calculateSeniority(int years) {
+        if (years < 1)
+            return SeniorityLevel.FRESHER;
+        if (years < 2)
+            return SeniorityLevel.JUNIOR;
+        if (years < 4)
+            return SeniorityLevel.MID;
+        if (years < 6)
+            return SeniorityLevel.SENIOR;
+        return SeniorityLevel.MANAGER;
+    }
+
+    private void updateCandidateSkills(Candidate candidate, List<String> skillNames) {
+        for (String skillName : skillNames) {
+            Skill skill = skillRepository.findByName(skillName).orElseGet(
+                    () -> {
+                        Skill newSkill = new Skill();
+                        newSkill.setName(skillName);
+                        return skillRepository.save(newSkill);
+                    });
+            boolean alreadyHasSkill = candidate.getSkills().stream()
+                    .anyMatch(cs -> cs.getSkill().getId().equals(skill.getId()));
+
+            if (!alreadyHasSkill) {
+                CandidateSkill candidateSkill = new CandidateSkill();
+                candidateSkill.setCandidate(candidate);
+                candidateSkill.setSkill(skill);
+                candidateSkill.setLevel(1);
+                candidate.getSkills().add(candidateSkill);
+            }
+        }
+        candidateRepository.save(candidate);
+    }
+
+    private String buildBioFromCV(ResumeAnalysisResponse cv) {
+        StringBuilder bio = new StringBuilder();
+        if (cv.getJobTitles() != null && !cv.getJobTitles().isEmpty()) {
+            bio.append("Worked as: ").append(String.join(", ", cv.getJobTitles())).append("\n");
+        }
+        if (cv.getCompanies() != null && !cv.getCompanies().isEmpty()) {
+            bio.append("At companies: ").append(String.join(", ", cv.getCompanies())).append("\n");
+        }
+        if (cv.getUniversities() != null && !cv.getUniversities().isEmpty()) {
+            bio.append("Education: ").append(String.join(", ", cv.getUniversities())).append("\n");
+        }
+
+        return bio.toString();
     }
 }

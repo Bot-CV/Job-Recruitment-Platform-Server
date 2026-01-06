@@ -1,8 +1,6 @@
 package org.toanehihi.jobrecruitmentplatformserver.interfaces.web.controllers.resource;
 
 import java.util.List;
-import java.util.Map;
-
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.application.cloud.service.CloudStorageService;
@@ -12,6 +10,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.annotation.CurrentU
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.FileData;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
+import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResumeAnalysisResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -55,8 +54,8 @@ public class ResourceController {
 	}
 
 	@GetMapping("/resumes/analyze")
-	DataResponse<Map<String, Object>> analyzeResume(@RequestParam("resourceId") Long resourceId) {
-		return DataResponse.<Map<String, Object>>builder()
+	DataResponse<ResumeAnalysisResponse> analyzeResume(@RequestParam("resourceId") Long resourceId) {
+		return DataResponse.<ResumeAnalysisResponse>builder()
 				.data(resourceService.analyzeResume(resourceId))
 				.build();
 	}
