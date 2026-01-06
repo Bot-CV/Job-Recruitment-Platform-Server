@@ -17,6 +17,7 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.*;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.AccountStatus;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.AuthProvider;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ResourceType;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.account.AccountMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.*;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.account.AccountResponse;
@@ -85,7 +86,6 @@ public class AuthServiceImpl implements AuthService {
         account.setRole(role);
         account.setProvider(AuthProvider.LOCAL);
         Account savedAccount = accountRepository.save(account);
-
         Candidate candidate = Candidate.builder()
                 .account(savedAccount)
                 .fullName(request.getFullName())
@@ -265,7 +265,18 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private Resource getDefaultAvatar() {
-        return resourceRepository.findByPublicId(defaultAvtPublicId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        Resource resource = resourceRepository.findByPublicId(defaultAvtPublicId)
+                .orElse(null);
+        if (resource == null) {
+            return resourceRepository.save(Resource.builder()
+                    .publicId("default-avatar")
+                    .url("https://www.lutzlawoffice.com/wp-content/uploads/2021/08/default-avatar.png")
+                    .resourceType(ResourceType.AVATAR)
+                    .mimeType("image/jpeg")
+                    .contentType("image/jpeg")
+                    .name("default-avatar")
+                    .build());
+        }
+        return resource;
     }
 }

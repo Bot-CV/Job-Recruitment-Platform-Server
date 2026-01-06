@@ -96,11 +96,11 @@ public class JobController {
 
     @GetMapping("/public/recommend")
     public DataResponse<List<JobResponse>> getJobsRecommend(
-            @RequestParam(defaultValue = "0") Long userId,
+            @CurrentUser Account account,
             @RequestParam(defaultValue = "20") int limit
     ) {
         return DataResponse.<List<JobResponse>>builder()
-                .data(jobService.getJobsRecommend(userId, limit))
+                .data(jobService.getJobsRecommend(account.getId(), limit))
                 .build();
     }
 

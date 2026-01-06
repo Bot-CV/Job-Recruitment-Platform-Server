@@ -51,6 +51,7 @@ public class JobServiceImpl implements JobService {
     private final OutboxEventService outboxEventService;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
+    
     @Value("${app.search-service-url}")
     private String searchServiceUrl;
 
@@ -426,8 +427,10 @@ public class JobServiceImpl implements JobService {
             if (jobIds.isEmpty()) {
                 return List.of();
             }
-
-            List<Job> jobs = jobRepository.findAllById(jobIds);
+            List<Job> jobs = new ArrayList<>();
+            for (Long jobId : jobIds) {
+                jobs.add(jobRepository.findById(jobId).get());
+            }
             Map<Long, JobResponse> jobMap = jobs.stream()
                     .map(jobMapper::toResponse)
                     .collect(Collectors.toMap(JobResponse::getId, Function.identity()));
