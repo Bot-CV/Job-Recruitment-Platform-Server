@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Job;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.OutboxEvent;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.JobStatus;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.AggregateType;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.OutboxStatus;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.JobMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.JobRepository;
@@ -52,7 +53,7 @@ public class OutboxReconciliationService {
             }
 
             // Collect all aggregate IDs that already have any outbox event for JOB
-            Set<Long> existingOutboxJobIds = outboxEventRepository.findDistinctAggregateIdsByAggregateType("JOB");
+            Set<Long> existingOutboxJobIds = outboxEventRepository.findDistinctAggregateIdsByAggregateType(AggregateType.JOB.name());
 
             // Find missing
             int created = 0;
@@ -83,7 +84,7 @@ public class OutboxReconciliationService {
             JobEventPayload eventPayload = jobMapper.toEventPayload(reloaded);
             String payload = objectMapper.writeValueAsString(eventPayload);
 
-            OutboxEvent event = outboxEventService.saveOutboxEvent("JOB", job.getId(), "CREATED", payload);
+            OutboxEvent event = outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), job.getId(), "CREATED", payload);
 
             boolean published = redisStreamPublisher.publishToStream(event);
             if (published) {

@@ -68,7 +68,7 @@ public class CompanyServiceImpl implements CompanyService {
     public PageResult<CompanyResponse> getVerifyList(Account account, int page, int size, String sortBy,
             String sortDir) {
         Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Pageable pageable = PageRequest.of(page, size, sort);
         Page<Company> unverifiedCompaniesPage = companyRepository.findAllUnverifiedCompanies(pageable);
         return PageResult.from(unverifiedCompaniesPage.map(companyMapper::toResponse));
 

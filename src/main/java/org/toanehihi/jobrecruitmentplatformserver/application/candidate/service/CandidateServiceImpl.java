@@ -150,7 +150,7 @@ public class CandidateServiceImpl implements CandidateService {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public JobApplicationResponse applyJob(Long jobId, MultipartFile cv) {
         Candidate candidate = getCurrentCandidate();
 
@@ -182,7 +182,7 @@ public class CandidateServiceImpl implements CandidateService {
         Candidate candidate = getCurrentCandidate();
 
         Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Pageable pageable = PageRequest.of(page, size, sort);
         Page<JobApplication> applicationPage = jobApplicationRepository.findByCandidate(candidate, pageable);
         Page<JobApplicationResponse> responsePage = applicationPage.map(jobApplicationMapper::toResponse);
 
@@ -193,7 +193,7 @@ public class CandidateServiceImpl implements CandidateService {
     public PageResult<SavedJobResponse> getAllSavedJobs(int page, int size, String sortBy, String sortDir) {
         Candidate candidate = getCurrentCandidate();
         Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Pageable pageable = PageRequest.of(page, size, sort);
         Page<SavedJob> savedJobPage = savedJobRepository.findByCandidateId(candidate.getId(), pageable);
 
         return PageResult.from(
@@ -204,7 +204,7 @@ public class CandidateServiceImpl implements CandidateService {
     public PageResult<ResourceResponse> getCandidateResumes(int page, int size, String sortBy, String sortDir) {
         Candidate candidate = getCurrentCandidate();
         Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Pageable pageable = PageRequest.of(page, size, sort);
         Page<ResourceResponse> resourcePage = resourceRepository
                 .findByOwnerIdAndResourceType(candidate.getId(), ResourceType.CV, pageable)
                 .map(resourceMapper::toResponse);

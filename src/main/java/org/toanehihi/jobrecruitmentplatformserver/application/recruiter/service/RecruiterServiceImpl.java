@@ -137,7 +137,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
 
     @Override
-    public Page<JobResponse> getCompanyJobs(Account account, String jobStatus, int page, int size, String sortBy,
+    public PageResult<JobResponse> getCompanyJobs(Account account, String jobStatus, int page, int size, String sortBy,
             String sortDir) {
         Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
@@ -152,13 +152,11 @@ public class RecruiterServiceImpl implements RecruiterService {
         Page<Job> jobs = jobRepository.findJobsByCompany_IdAndStatus(recruiter.getCompany().getId(),
                 JobStatus.valueOf(jobStatus), pageable);
 
-        log.info(String.valueOf(jobs.getSize()));
-
-        return jobs.map(jobMapper::toResponse);
+        return PageResult.from(jobs.map(jobMapper::toResponse));
     }
 
     @Override
-    public Page<JobApplicantResponse> getJobApplicants(Account account, Long jobId, int page, int size, String sortBy,
+    public PageResult<JobApplicantResponse> getJobApplicants(Account account, Long jobId, int page, int size, String sortBy,
             String sortDir) {
         Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
@@ -179,7 +177,7 @@ public class RecruiterServiceImpl implements RecruiterService {
 
         Page<JobApplication> applications = jobApplicationRepository.findByJobId(jobId, pageable);
 
-        return applications.map(jobApplicationMapper::toApplicantResponse);
+        return PageResult.from(applications.map(jobApplicationMapper::toApplicantResponse));
     }
 
     @Override

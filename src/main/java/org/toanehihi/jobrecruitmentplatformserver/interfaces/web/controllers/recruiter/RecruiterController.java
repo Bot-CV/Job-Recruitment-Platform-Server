@@ -1,6 +1,5 @@
 package org.toanehihi.jobrecruitmentplatformserver.interfaces.web.controllers.recruiter;
 
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.application.recruiter.service.RecruiterService;
@@ -58,27 +57,27 @@ public class RecruiterController {
     }
 
     @GetMapping("/company/jobs")
-    DataResponse<Page<JobResponse>> getCompanyJobs(
+    DataResponse<PageResult<JobResponse>> getCompanyJobs(
             @CurrentUser Account account,
             @RequestParam(value = "jobStatus") String jobStatus,
             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int size,
             @RequestParam(value = "sortBy", required = false, defaultValue = "datePosted") String sortBy,
             @RequestParam(value = "sortDir", required = false, defaultValue = "DESC") String sortDir) {
-        return DataResponse.<Page<JobResponse>>builder()
+        return DataResponse.<PageResult<JobResponse>>builder()
                 .data(recruiterService.getCompanyJobs(account, jobStatus, page, size, sortBy, sortDir))
                 .build();
     }
 
     @GetMapping("/company/{jobId}/applicants")
-    DataResponse<Page<JobApplicantResponse>> getJobApplicants(
+    DataResponse<PageResult<JobApplicantResponse>> getJobApplicants(
             @CurrentUser Account account,
             @PathVariable Long jobId,
             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int size,
             @RequestParam(value = "sortBy", required = false, defaultValue = "appliedAt") String sortBy,
             @RequestParam(value = "sortDir", required = false, defaultValue = "DESC") String sortDir) {
-        return DataResponse.<Page<JobApplicantResponse>>builder()
+        return DataResponse.<PageResult<JobApplicantResponse>>builder()
                 .data(recruiterService.getJobApplicants(account, jobId, page, size, sortBy, sortDir))
                 .build();
     }
@@ -119,7 +118,7 @@ public class RecruiterController {
             @RequestParam(value = "size", required = false, defaultValue = "10") int size,
             @RequestParam(value = "sortBy", required = false, defaultValue = "scheduledAt") String sortBy,
             @RequestParam(value = "sortDir", required = false, defaultValue = "DESC") String sortDir) {
-        return DataResponse.<org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult<InterviewResponse>>builder()
+        return DataResponse.<PageResult<InterviewResponse>>builder()
                 .data(recruiterService.getAllInterviews(account, page, size, sortBy, sortDir))
                 .build();
     }

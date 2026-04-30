@@ -66,7 +66,7 @@ public class CandidateController {
 
     @GetMapping("/applications")
     DataResponse<PageResult<JobApplicationResponse>> getAllApplications(
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "appliedAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
@@ -77,7 +77,7 @@ public class CandidateController {
 
     @GetMapping("/saved-jobs")
     DataResponse<PageResult<SavedJobResponse>> getAllSavedJobs(
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "savedAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
@@ -88,7 +88,7 @@ public class CandidateController {
 
     @GetMapping("/resumes")
     DataResponse<PageResult<ResourceResponse>> getCandidateResumes(
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "uploadedAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {

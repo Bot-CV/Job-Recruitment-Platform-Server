@@ -1,6 +1,5 @@
 package org.toanehihi.jobrecruitmentplatformserver.application.recruiter.service;
 
-import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ApplicationStatus;
@@ -25,10 +24,10 @@ public interface RecruiterService {
 
     ResourceResponse updateAvatar(MultipartFile file);
 
-    Page<JobResponse> getCompanyJobs(Account account, String jobStatus, int page, int size, String sortBy,
+    PageResult<JobResponse> getCompanyJobs(Account account, String jobStatus, int page, int size, String sortBy,
             String sortDir);
 
-    Page<JobApplicantResponse> getJobApplicants(Account account, Long jobId, int page, int size, String sortBy,
+    PageResult<JobApplicantResponse> getJobApplicants(Account account, Long jobId, int page, int size, String sortBy,
             String sortDir);
 
     JobApplicantResponse processCandidate(Account account, Long jobApplicationId, ApplicationStatus action);

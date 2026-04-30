@@ -21,6 +21,7 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.*;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ResourceType;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.RoleName;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.resource.ResourceMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.AttestationResourceRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.CandidateRepository;
@@ -59,10 +60,10 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public ResourceResponse updateUserAvatar(Account account, MultipartFile avatar) {
-        String roleName = account.getRole().getName();
+        RoleName role = RoleName.valueOf(account.getRole().getName());
 
-        return switch (roleName) {
-            case "RECRUITER" -> {
+        return switch (role) {
+            case RECRUITER -> {
                 Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
                         .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
                 yield updateAvatar(
@@ -74,7 +75,7 @@ public class ResourceServiceImpl implements ResourceService {
                             recruiterRepository.save(recruiter);
                         });
             }
-            case "CANDIDATE" -> {
+            case CANDIDATE -> {
                 Candidate candidate = candidateRepository.findByAccountId(account.getId())
                         .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_CANDIDATE_NOT_FOUND));
                 yield updateAvatar(

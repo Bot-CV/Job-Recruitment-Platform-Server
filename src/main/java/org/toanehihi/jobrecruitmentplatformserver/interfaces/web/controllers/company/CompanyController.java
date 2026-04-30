@@ -33,7 +33,7 @@ public class CompanyController {
     @HasAdminRole
     DataResponse<PageResult<CompanyResponse>> getVerifyList(
             @CurrentUser Account account,
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "dateUpdated") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {

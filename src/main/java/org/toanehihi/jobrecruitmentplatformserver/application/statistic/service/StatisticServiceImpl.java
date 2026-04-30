@@ -9,6 +9,7 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.Account;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Recruiter;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ApplicationStatus;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.JobStatus;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.RoleName;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.JobMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.AccountRepository;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.CandidateRepository;
@@ -105,7 +106,7 @@ public class StatisticServiceImpl implements StatisticService {
 
     @Override
     public AdminStatisticResponse getAdminStatistics(Account account) {
-        if (!account.getRole().getName().equals("ADMIN")) {
+        if (!account.getRole().getName().equals(RoleName.ADMIN.name())) {
             throw new AppException(ErrorCode.ACCESS_FORBIDDEN);
         }
         OffsetDateTime now = OffsetDateTime.now();

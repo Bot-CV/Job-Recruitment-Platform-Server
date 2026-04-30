@@ -24,6 +24,7 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.EmploymentT
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.JobStatus;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.SeniorityLevel;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.WorkMode;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.AggregateType;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.job.JobMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.*;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.PageResult;
@@ -115,7 +116,7 @@ public class JobServiceImpl implements JobService {
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent("JOB", job.getId(), CREATE_EVENT, payload);
+            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), job.getId(), CREATE_EVENT, payload);
             log.debug("Saved outbox event for job creation: jobId={}", job.getId());
         } catch (Exception e) {
             log.error("Failed to save outbox event for job creation: jobId={}, error={}",
@@ -149,7 +150,7 @@ public class JobServiceImpl implements JobService {
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent("JOB", job.getId(), UPDATE_EVENT, payload);
+            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), job.getId(), UPDATE_EVENT, payload);
             log.debug("Saved outbox event for job update: jobId={}", job.getId());
         } catch (Exception e) {
             log.error("Failed to save outbox event for job update: jobId={}, error={}",
@@ -280,7 +281,7 @@ public class JobServiceImpl implements JobService {
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent("JOB", job.getId(), UPDATE_EVENT, payload);
+            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), job.getId(), UPDATE_EVENT, payload);
             log.debug("Saved outbox event for job cancellation: jobId={}", job.getId());
         } catch (Exception e) {
             log.error("Failed to save outbox event for job cancellation: jobId={}, error={}",
@@ -310,7 +311,7 @@ public class JobServiceImpl implements JobService {
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent("JOB", job.getId(), UPDATE_EVENT, payload);
+            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), job.getId(), UPDATE_EVENT, payload);
             log.debug("Saved outbox event for job moderation: jobId={}, action={}", job.getId(), action);
         } catch (Exception e) {
             log.error("Failed to save outbox event for job moderation: jobId={}, action={}, error={}",
@@ -371,7 +372,7 @@ public class JobServiceImpl implements JobService {
         try {
             JobEventPayload eventPayload = jobMapper.toEventPayload(job);
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent("JOB", job.getId(), DELETE_EVENT, payload);
+            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), job.getId(), DELETE_EVENT, payload);
             log.debug("Saved outbox event for job deletion: jobId={}", job.getId());
         } catch (Exception e) {
             log.error("Failed to save outbox event for job deletion: jobId={}, error={}",

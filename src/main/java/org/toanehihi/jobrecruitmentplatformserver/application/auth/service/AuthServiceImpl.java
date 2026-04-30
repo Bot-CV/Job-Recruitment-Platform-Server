@@ -18,6 +18,7 @@ import org.toanehihi.jobrecruitmentplatformserver.domain.model.*;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.AccountStatus;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.AuthProvider;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ResourceType;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.RoleName;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.mappers.account.AccountMapper;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.repositories.*;
 import org.toanehihi.jobrecruitmentplatformserver.infrastructure.security.AccountUserDetails;
@@ -57,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AccountResponse candidateRegister(CandidateAccountRequest request) {
-        Role role = roleRepository.findByName("CANDIDATE")
+        Role role = roleRepository.findByName(RoleName.CANDIDATE.name())
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
 
         Optional<Account> existingAccount = accountRepository.findByEmail(request.getEmail());
@@ -100,7 +101,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AccountResponse recruiterRegister(RecruiterAccountRequest request) {
-        Role role = roleRepository.findByName("RECRUITER")
+        Role role = roleRepository.findByName(RoleName.RECRUITER.name())
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
 
         if (accountRepository.existsByEmail(request.getEmail())) {
@@ -171,7 +172,7 @@ public class AuthServiceImpl implements AuthService {
                 throw new AppException(ErrorCode.AUTH_ACCOUNT_SUSPENDED);
             }
         } else {
-            Role role = roleRepository.findByName("CANDIDATE")
+            Role role = roleRepository.findByName(RoleName.CANDIDATE.name())
                     .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
 
             account = Account.builder()
