@@ -1,6 +1,6 @@
 spring:
   application:
-    name: JobRecruitmentPlatform-Server
+    name: BotCV-Server
   config:
     import: optional:file:.env[.properties]
   flyway:
