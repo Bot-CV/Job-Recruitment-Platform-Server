@@ -42,7 +42,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.recruiter.
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.recruiter.RecruiterResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Slf4j
@@ -73,6 +73,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
 
     @Override
+    @Transactional
     public RecruiterResponse updateProfile(RecruiterRequest request) {
         Recruiter recruiter = getCurrentRecruiter();
 
@@ -182,6 +183,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
 
     @Override
+    @Transactional
     public JobApplicantResponse processCandidate(Account account, Long jobApplicationId, ApplicationStatus action) {
         JobApplication jobApplication = jobApplicationRepository.findById(jobApplicationId)
                 .orElseThrow(() -> new AppException(ErrorCode.JOB_APPLICATION_NOT_FOUND));

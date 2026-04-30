@@ -25,7 +25,7 @@ import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.Ve
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.company.VerifyCompanyResponse;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.resource.ResourceResponse;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service

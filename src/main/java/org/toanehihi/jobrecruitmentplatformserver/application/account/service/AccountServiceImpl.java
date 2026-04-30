@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.toanehihi.jobrecruitmentplatformserver.application.email.service.EmailService;
 import org.toanehihi.jobrecruitmentplatformserver.application.token.service.TokenService;
 import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
@@ -30,6 +31,7 @@ public class AccountServiceImpl implements AccountService {
     private static final String VERIFICATION_TOKEN_PREFIX = "verify_token:";
 
     @Override
+    @Transactional
     public void changeAccountStatus(Long accountId, AccountStatus status) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
