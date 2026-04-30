@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.Candidate;
-import org.toanehihi.jobrecruitmentplatformserver.domain.model.Job;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.JobApplication;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.ApplicationStatus;
 
@@ -24,8 +23,6 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     Page<JobApplication> findByCandidate(Candidate candidate, Pageable pageable);
 
     Page<JobApplication> findByJobId(Long jobId, Pageable pageable);
-
-    Long job(Job job);
 
     Long countByJob_Company_IdAndStatus(Long companyId, ApplicationStatus status);
 

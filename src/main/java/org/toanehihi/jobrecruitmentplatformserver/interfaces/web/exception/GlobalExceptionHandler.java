@@ -1,4 +1,4 @@
-package org.toanehihi.jobrecruitmentplatformserver.domain.exception;
+package org.toanehihi.jobrecruitmentplatformserver.interfaces.web.exception;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +11,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.toanehihi.jobrecruitmentplatformserver.domain.exception.AppException;
+import org.toanehihi.jobrecruitmentplatformserver.domain.exception.ErrorCode;
 import org.toanehihi.jobrecruitmentplatformserver.interfaces.web.dtos.DataResponse;
 
 import lombok.extern.slf4j.Slf4j;
@@ -102,7 +104,6 @@ public class GlobalExceptionHandler {
         String message = exception.getMessage();
         ErrorCode errorCode = ErrorCode.DATABASE_CONSTRAINT_VIOLATION;
 
-        // Parse specific constraint violations
         String field = null;
         if (message != null) {
             if (message.contains("duplicate key")) {

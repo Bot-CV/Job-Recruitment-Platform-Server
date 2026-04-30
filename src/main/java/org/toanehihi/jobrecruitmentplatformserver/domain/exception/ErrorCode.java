@@ -47,9 +47,9 @@ public enum ErrorCode {
     // Recruiter(1401 - 1500)
     RECRUITER_COMPANY_NOT_FOUND(1401, "There is no company found for recruiter account", HttpStatus.NOT_FOUND),
 
-    // Role (1401 - 1500)
-    ROLE_NOT_FOUND(1401, "Role not found", HttpStatus.NOT_FOUND),
-    ACCESS_FORBIDDEN(1403, "Access forbidden", HttpStatus.FORBIDDEN),
+    // Role (1901 - 2000)
+    ROLE_NOT_FOUND(1901, "Role not found", HttpStatus.NOT_FOUND),
+    ACCESS_FORBIDDEN(1902, "Access forbidden", HttpStatus.FORBIDDEN),
 
     // Job (1501 - 1600)
     JOB_NOT_FOUND(1501, "Job not found", HttpStatus.NOT_FOUND),
@@ -69,13 +69,15 @@ public enum ErrorCode {
 
     // Skill (1701 - 1800)
     SKILL_NOT_FOUND(1701, "Skill not found", HttpStatus.NOT_FOUND),
-    INTERVIEW_NOT_FOUND(1702, "Interview not found", HttpStatus.NOT_FOUND),
-    RECRUITER_UNAUTHORIZED_ACCESS_INTERVIEW(1703, "Recruiter unauthorized to access this interview",
+
+    // Interview (1801 - 1900)
+    INTERVIEW_NOT_FOUND(1801, "Interview not found", HttpStatus.NOT_FOUND),
+    RECRUITER_UNAUTHORIZED_ACCESS_INTERVIEW(1802, "Recruiter unauthorized to access this interview",
             HttpStatus.FORBIDDEN),
 
-    // Company (1801 - 1900)
-    COMPANY_NOT_FOUND(1801, "Company not found", HttpStatus.NOT_FOUND),
-    COMPANY_HAS_BEEN_VERIFIED(1802, "Company has been verified", HttpStatus.FORBIDDEN),
+    // Company (2001 - 2100)
+    COMPANY_NOT_FOUND(2001, "Company not found", HttpStatus.NOT_FOUND),
+    COMPANY_HAS_BEEN_VERIFIED(2002, "Company has been verified", HttpStatus.FORBIDDEN),
 
     // Email (9601 - 9650)
     EMAIL_SEND_FAILED(9601, "Failed to send email", HttpStatus.BAD_GATEWAY),

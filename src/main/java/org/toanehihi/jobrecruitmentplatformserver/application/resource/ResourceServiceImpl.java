@@ -159,11 +159,6 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public ResourceResponse uploadJobAttachment(MultipartFile file) {
-        return null;
-    }
-
-    @Override
     @HasRecruiterRole
     @Transactional
     public List<ResourceResponse> uploadAttestation(Account account, List<MultipartFile> files) {

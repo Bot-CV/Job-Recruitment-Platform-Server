@@ -82,18 +82,6 @@ public class JobController {
                 .build();
     }
 
-//     @GetMapping("/recommendation")
-//     public DataResponse<List<JobResponse>> getRecommendedJobs(
-//             @CurrentUser Account account,
-//             @RequestParam(defaultValue = "0") int page,
-//             @RequestParam(defaultValue = "10") int size,
-//             @RequestParam(defaultValue = "id") String sortBy,
-//             @RequestParam(defaultValue = "asc") String sortDir) {
-//         return DataResponse.<List<JobResponse>>builder()
-//                 .data(jobService.recommendJobs(account))
-//                 .build();
-//     }
-
     @GetMapping("/public/recommend")
     public DataResponse<List<JobResponse>> getJobsRecommend(
             @CurrentUser Account account,

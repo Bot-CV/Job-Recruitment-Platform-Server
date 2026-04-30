@@ -3,15 +3,17 @@ package org.toanehihi.jobrecruitmentplatformserver.domain.model;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.toanehihi.jobrecruitmentplatformserver.domain.model.enums.InteractionEventType;
-import org.toanehihi.jobrecruitmentplatformserver.infrastructure.persistence.converter.JsonbConverter;
+import org.toanehihi.jobrecruitmentplatformserver.domain.model.converter.JsonbConverter;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

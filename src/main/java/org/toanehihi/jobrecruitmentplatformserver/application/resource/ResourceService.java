@@ -11,8 +11,6 @@ public interface ResourceService {
 
     ResourceResponse updateCompanyLogo(Account account, MultipartFile logo);
 
-    ResourceResponse uploadJobAttachment(MultipartFile file); // For job image and attachment
-
     List<ResourceResponse> uploadAttestation(Account account, List<MultipartFile> files);
 
     ResourceResponse uploadResume(Account account, MultipartFile file);

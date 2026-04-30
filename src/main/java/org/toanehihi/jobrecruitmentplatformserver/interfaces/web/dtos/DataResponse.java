@@ -16,7 +16,7 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DataResponse<T> {
     @Builder.Default
-    private int code = 1000;
+    private int code = ResponseCode.SUCCESS;
     private String message;
     private T data;
 }
