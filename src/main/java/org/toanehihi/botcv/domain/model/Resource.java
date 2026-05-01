@@ -17,32 +17,27 @@ import java.time.OffsetDateTime;
 @Table(name = "resources")
 public class Resource {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(name = "owner_id")
-    private Long ownerId;
-
-	@Column(name = "mime_type", nullable = false)
-	private String mimeType;
-
+    @Column(name = "content_type", nullable = false)
     private String contentType;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "resource_type", nullable = false)
-	private ResourceType resourceType;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "resource_type", nullable = false, columnDefinition = "resource_type")
+    private ResourceType resourceType;
 
-	@Column(name = "url", nullable = false)
-	private String url;
+    @Column(name = "public_id", nullable = false, unique = true)
+    private String publicId;
 
-	@Column(name = "public_id", nullable = false, unique = true)
-	private String publicId;
+    @Column(name = "size", nullable = false)
+    private Long size;
 
-	@Column(name = "name", nullable = false)
-	private String name;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-	@CreationTimestamp
-	@Column(name = "uploaded_at", nullable = false)
-	private OffsetDateTime uploadedAt;
+    @CreationTimestamp
+    @Column(name = "uploaded_at", nullable = false)
+    private OffsetDateTime uploadedAt;
 }
