@@ -37,7 +37,7 @@ public class JobApplication {
 	private Job job;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "status")
+	@Column(name = "status", columnDefinition = "application_status")
 	@Builder.Default
 	private ApplicationStatus status = ApplicationStatus.SUBMITTED;
 
