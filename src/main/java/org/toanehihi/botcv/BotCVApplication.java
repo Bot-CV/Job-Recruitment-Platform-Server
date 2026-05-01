@@ -12,7 +12,7 @@ import java.util.TimeZone;
 @SpringBootApplication
 @EnableScheduling
 @EnableAsync
-public class JobRecruitmentPlatformServerApplication {
+public class BotCVApplication {
 
 	public static void main(String[] args) {
 		Dotenv dotenv = Dotenv.configure()
@@ -25,6 +25,6 @@ public class JobRecruitmentPlatformServerApplication {
 		System.setProperty("user.timezone", tz);
 		TimeZone.setDefault(TimeZone.getTimeZone(tz));
 
-		SpringApplication.run(JobRecruitmentPlatformServerApplication.class, args);
+		SpringApplication.run(BotCVApplication.class, args);
 	}
 }
