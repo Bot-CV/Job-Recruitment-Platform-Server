@@ -1,13 +1,11 @@
 package org.toanehihi.botcv.interfaces.web.controllers.resource;
 
-import java.util.List;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.botcv.application.cloud.service.CloudStorageService;
 import org.toanehihi.botcv.application.resource.service.ResourceService;
 import org.toanehihi.botcv.domain.model.Account;
 import org.toanehihi.botcv.interfaces.annotation.CurrentUser;
-import org.toanehihi.botcv.interfaces.annotation.HasRecruiterRole;
 import org.toanehihi.botcv.interfaces.web.dtos.DataResponse;
 import org.toanehihi.botcv.interfaces.web.dtos.resource.FileData;
 import org.toanehihi.botcv.interfaces.web.dtos.resource.ResourceResponse;
@@ -43,15 +41,6 @@ public class ResourceController {
 	public DataResponse<FileData> downloadResource(@RequestParam(value = "url") String resourceUrl) {
 		return DataResponse.<FileData>builder()
 				.data(cloudStorageService.downloadFile(resourceUrl))
-				.build();
-	}
-
-	@PostMapping("/company/attestations")
-	@HasRecruiterRole
-	DataResponse<List<ResourceResponse>> uploadAttestation(@CurrentUser Account account,
-			@RequestParam("files") List<MultipartFile> files) {
-		return DataResponse.<List<ResourceResponse>>builder()
-				.data(resourceService.uploadAttestation(account, files))
 				.build();
 	}
 
