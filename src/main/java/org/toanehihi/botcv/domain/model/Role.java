@@ -2,6 +2,8 @@ package org.toanehihi.botcv.domain.model;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,4 +29,11 @@ public class Role implements Serializable {
     @CreationTimestamp
     @Column(name = "date_created")
     private OffsetDateTime dateCreated;
+
+    @ManyToMany
+    @JoinTable(name = "role_permissions",
+        joinColumns = @JoinColumn(name = "role_id"),
+        inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    @Builder.Default
+    private Set<Permission> permissions = new HashSet<>();
 }
