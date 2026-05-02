@@ -24,24 +24,28 @@ public class Interview {
     @JoinColumn(name = "application_id")
     private JobApplication jobApplication;
 
+    @Column(name = "scheduled_at", nullable = false)
     private OffsetDateTime scheduledAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id")
     private Location location;
 
+    @Column(name = "meeting_url", length = 500)
+    private String meetingUrl;
+
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", columnDefinition = "interview_status")
     private InterviewStatus status;
 
+    @Column(name = "notes")
     private String notes;
 
-    @Column(name = "date_created", columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false)
     @CreationTimestamp
+    @Column(name = "date_created")
     private OffsetDateTime dateCreated;
 
-    @Column(name = "date_updated")
     @UpdateTimestamp
+    @Column(name = "date_updated")
     private OffsetDateTime dateUpdated;
-
-
 }

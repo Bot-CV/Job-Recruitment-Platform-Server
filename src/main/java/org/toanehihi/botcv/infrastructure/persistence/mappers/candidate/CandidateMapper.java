@@ -3,8 +3,6 @@ package org.toanehihi.botcv.infrastructure.persistence.mappers.candidate;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
-import org.toanehihi.botcv.domain.exception.AppException;
-import org.toanehihi.botcv.domain.exception.ErrorCode;
 import org.toanehihi.botcv.domain.model.Candidate;
 import org.toanehihi.botcv.domain.model.enums.ResourceType;
 import org.toanehihi.botcv.infrastructure.persistence.mappers.location.LocationMapper;
@@ -27,9 +25,8 @@ public class CandidateMapper {
     public void updateCandidate(Candidate candidate, CandidateRequest request) {
         candidate.setFullName(request.getFullName());
         candidate.setPhone(request.getPhone());
-        candidate.setSeniority(request.getSeniority());
-        candidate.setSalaryExpectMin(request.getSalaryExpectMin());
-        candidate.setSalaryExpectMax(request.getSalaryExpectMax());
+        candidate.setExperienceYears(request.getExperienceYears());
+        candidate.setSalaryExpect(request.getSalaryExpect());
         candidate.setCurrency(request.getCurrency());
         candidate.setRemotePref(request.getRemotePref());
         candidate.setRelocationPref(request.getRelocationPref());
@@ -43,15 +40,17 @@ public class CandidateMapper {
                 .fullName(candidate.getFullName())
                 .phone(candidate.getPhone())
                 .location(candidate.getLocation() != null ? locationMapper.toResponse(candidate.getLocation()) : null)
-                .seniority(candidate.getSeniority())
-                .salaryExpectMin(candidate.getSalaryExpectMin())
-                .salaryExpectMax(candidate.getSalaryExpectMax())
+                .experienceYears(candidate.getExperienceYears())
+                .salaryExpect(candidate.getSalaryExpect())
                 .currency(candidate.getCurrency())
                 .remotePref(candidate.getRemotePref())
                 .relocationPref(candidate.getRelocationPref())
                 .email(candidate.getAccount().getEmail())
-                .resource(resourceMapper.toResponse(resourceRepository.findByIdAndResourceType(candidate.getAvatarResourceId(), ResourceType.AVATAR)
-                                .orElseThrow(() -> new AppException(ErrorCode.AVATAR_RESOURCE_NOT_FOUND))))
+                .resource(candidate.getAvatarResourceId() != null
+                        ? resourceRepository.findByIdAndResourceType(candidate.getAvatarResourceId(), ResourceType.IMAGE)
+                                .map(resourceMapper::toResponse)
+                                .orElse(null)
+                        : null)
                 .bio(candidate.getBio())
                 .dateCreated(candidate.getDateCreated())
                 .dateUpdated(candidate.getDateUpdated())

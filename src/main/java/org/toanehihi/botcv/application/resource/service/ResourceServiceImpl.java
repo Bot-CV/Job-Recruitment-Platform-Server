@@ -16,16 +16,15 @@ import org.springframework.web.multipart.MultipartFile;
 import org.toanehihi.botcv.application.candidate.service.CandidateService;
 import org.toanehihi.botcv.application.cloud.service.CloudStorageService;
 import org.toanehihi.botcv.application.cloud.service.CloudinaryStorageImpl;
-import org.toanehihi.botcv.application.cloud.service.CloudinaryStorageImpl.CloudinaryFileInfo;
 import org.toanehihi.botcv.domain.exception.AppException;
 import org.toanehihi.botcv.domain.exception.ErrorCode;
 import org.toanehihi.botcv.domain.model.*;
 import org.toanehihi.botcv.domain.model.enums.ResourceType;
 import org.toanehihi.botcv.domain.model.enums.RoleName;
 import org.toanehihi.botcv.infrastructure.persistence.mappers.resource.ResourceMapper;
-import org.toanehihi.botcv.infrastructure.persistence.repositories.AttestationResourceRepository;
 import org.toanehihi.botcv.infrastructure.persistence.repositories.CandidateRepository;
 import org.toanehihi.botcv.infrastructure.persistence.repositories.CompanyRepository;
+import org.toanehihi.botcv.infrastructure.persistence.repositories.JobApplicationRepository;
 import org.toanehihi.botcv.infrastructure.persistence.repositories.RecruiterRepository;
 import org.toanehihi.botcv.infrastructure.persistence.repositories.ResourceRepository;
 import org.toanehihi.botcv.interfaces.web.dtos.resource.FileData;
@@ -35,10 +34,7 @@ import org.toanehihi.botcv.interfaces.web.dtos.resource.ResumeAnalysisResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.LongConsumer;
 
 @Service
@@ -48,7 +44,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final CandidateRepository candidateRepository;
     private final ResourceRepository resourceRepository;
     private final CompanyRepository companyRepository;
-    private final AttestationResourceRepository attestationResourceRepository;
+    private final JobApplicationRepository jobApplicationRepository;
     private final ResourceMapper resourceMapper;
     private final CloudStorageService cloudStorageService;
     private final CandidateService candidateService;
@@ -57,6 +53,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Value("${app.ner-service-url}")
     private String nerServiceUrl;
+
+    @Value("${app.cloudinary.base-url:}")
+    private String cloudinaryBaseUrl;
 
     @Override
     public ResourceResponse updateUserAvatar(Account account, MultipartFile avatar) {
@@ -98,7 +97,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         // Delete existing avatar if present
         Optional<Resource> currentAvatar = resourceRepository
-                .findByIdAndResourceType(currentAvatarId, ResourceType.AVATAR);
+                .findByIdAndResourceType(currentAvatarId, ResourceType.IMAGE);
 
         currentAvatar.ifPresent(resource -> {
             resourceRepository.delete(resource);
@@ -109,12 +108,10 @@ public class ResourceServiceImpl implements ResourceService {
         CloudinaryStorageImpl.CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(avatar, "avatar");
 
         Resource resource = Resource.builder()
-                .mimeType(fileInfo.mimeType())
                 .contentType(fileInfo.contentType())
-                .resourceType(ResourceType.AVATAR)
-                .contentType(fileInfo.contentType())
-                .url(fileInfo.url())
+                .resourceType(ResourceType.IMAGE)
                 .publicId(fileInfo.publicId())
+                .size(fileInfo.size())
                 .name(fileInfo.fileName())
                 .build();
 
@@ -137,7 +134,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         Optional<Resource> currentLogo = resourceRepository
-                .findByIdAndResourceType(company.getLogoResourceId(), ResourceType.COMPANY_LOGO);
+                .findByIdAndResourceType(company.getLogoResourceId(), ResourceType.IMAGE);
 
         currentLogo.ifPresent(resource -> {
             resourceRepository.delete(resource);
@@ -145,11 +142,10 @@ public class ResourceServiceImpl implements ResourceService {
         });
         CloudinaryStorageImpl.CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(logo, "company_logo");
         Resource resource = Resource.builder()
-                .mimeType(fileInfo.mimeType())
                 .contentType(fileInfo.contentType())
-                .resourceType(ResourceType.COMPANY_LOGO)
-                .url(fileInfo.url())
+                .resourceType(ResourceType.IMAGE)
                 .publicId(fileInfo.publicId())
+                .size(fileInfo.size())
                 .name(fileInfo.fileName())
                 .build();
         Resource savedResource = resourceRepository.save(resource);
@@ -159,56 +155,15 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    @Transactional
-    public List<ResourceResponse> uploadAttestation(Account account, List<MultipartFile> files) {
-        Recruiter recruiter = recruiterRepository.findByAccountId(account.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_RECRUITER_NOT_FOUND));
-
-        if (recruiter.getCompany().isVerified()) {
-            throw new AppException(ErrorCode.COMPANY_HAS_BEEN_VERIFIED);
-        }
-
-        if (attestationResourceRepository.existsByCompany(recruiter.getCompany())) {
-            throw new AppException(ErrorCode.RESOURCE_ATTESTATION_HAS_BEEN_SENT);
-        }
-        Company company = recruiter.getCompany();
-        Set<AttestationResource> attestations = new HashSet<>();
-        for (MultipartFile file : files) {
-            CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(file, "attestation");
-            Resource resource = Resource.builder()
-                    .mimeType(fileInfo.mimeType())
-                    .contentType(fileInfo.contentType())
-                    .resourceType(ResourceType.ATTESTATION)
-                    .url(fileInfo.url())
-                    .publicId(fileInfo.publicId())
-                    .name(fileInfo.fileName())
-                    .build();
-            Resource savedResource = resourceRepository.save(resource);
-            AttestationResource attestation = AttestationResource.builder()
-                    .company(company)
-                    .resource(savedResource)
-                    .build();
-            attestations.add(attestation);
-        }
-        company.getAttestations().addAll(attestations);
-        companyRepository.save(company);
-        return attestations.stream()
-                .map(attestation -> resourceMapper.toResponse(attestation.getResource()))
-                .toList();
-    }
-
-    @Override
     public ResourceResponse uploadResume(Account account, MultipartFile file) {
-        Candidate candidate = candidateRepository.findByAccountId(account.getId())
+        candidateRepository.findByAccountId(account.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_CANDIDATE_NOT_FOUND));
         CloudinaryStorageImpl.CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(file, "resume");
         Resource resource = Resource.builder()
-                .ownerId(candidate.getId())
-                .mimeType(fileInfo.mimeType())
                 .contentType(fileInfo.contentType())
-                .resourceType(ResourceType.CV)
-                .url(fileInfo.url())
+                .resourceType(ResourceType.DOCUMENT)
                 .publicId(fileInfo.publicId())
+                .size(fileInfo.size())
                 .name(fileInfo.fileName())
                 .build();
         Resource savedResource = resourceRepository.save(resource);
@@ -220,10 +175,11 @@ public class ResourceServiceImpl implements ResourceService {
     public ResumeAnalysisResponse analyzeResume(Long resourceId) {
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-        if (resource.getResourceType() != ResourceType.CV) {
+        if (resource.getResourceType() != ResourceType.DOCUMENT) {
             throw new AppException(ErrorCode.RESOURCE_TYPE_NOT_ALLOWED);
         }
-        FileData fileData = cloudStorageService.downloadFile(resource.getUrl());
+        String resourceUrl = buildResourceUrl(resource.getPublicId());
+        FileData fileData = cloudStorageService.downloadFile(resourceUrl);
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", new ByteArrayResource(fileData.getContent()) {
@@ -245,14 +201,20 @@ public class ResourceServiceImpl implements ResourceService {
         ResumeAnalysisResponse analysisResult = (wrapper != null) ? wrapper.entities : null;
 
         if (analysisResult != null) {
-            Long candidateId = resource.getOwnerId();
-
-            Candidate candidate = candidateRepository.findById(candidateId)
-                    .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_CANDIDATE_NOT_FOUND));
-
-            candidateService.updateProfileFromCV(candidate.getAccount().getId(), analysisResult);
+            jobApplicationRepository.findFirstByCvResourceId(resourceId)
+                    .map(JobApplication::getCandidate)
+                    .ifPresent(candidate ->
+                            candidateService.updateProfileFromCV(candidate.getAccount().getId(), analysisResult));
         }
         return analysisResult;
+    }
+
+    private String buildResourceUrl(String publicId) {
+        if (publicId == null) return null;
+        if (cloudinaryBaseUrl != null && !cloudinaryBaseUrl.isBlank()) {
+            return cloudinaryBaseUrl + "/" + publicId;
+        }
+        return publicId;
     }
 
     public record NerExtractResponse(ResumeAnalysisResponse entities) {

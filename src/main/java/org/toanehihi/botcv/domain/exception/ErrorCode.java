@@ -59,10 +59,11 @@ public enum ErrorCode {
     JOB_EXPIRED_CANNOT_APPLY(1505, "Job is expired, cannot apply", HttpStatus.BAD_REQUEST),
     JOB_NOT_IN_PENDING_STATUS(1506, "Job is not in pending status", HttpStatus.BAD_REQUEST),
     JOB_APPLICATION_NOT_FOUND(1507, "Job application not found", HttpStatus.NOT_FOUND),
-    RECRUITER_UNAUTHORIZED_ACCESS_JOB_APPLICANTS(1508, "Recruiter unauthorized to access job applicants",
+    JOB_CATEGORY_NOT_FOUND(1508, "Job category not found", HttpStatus.NOT_FOUND),
+    RECRUITER_UNAUTHORIZED_ACCESS_JOB_APPLICANTS(1509, "Recruiter unauthorized to access job applicants",
             HttpStatus.FORBIDDEN),
-    JOB_ALREADY_PROCESSED(1509, "Job already processed", HttpStatus.CONFLICT),
-    JOB_ALREADY_SAVED_TO_THIS_ACCOUNT(1510, "Job already saved to this account", HttpStatus.BAD_REQUEST),
+    JOB_ALREADY_PROCESSED(1510, "Job already processed", HttpStatus.CONFLICT),
+    JOB_ALREADY_SAVED_TO_THIS_ACCOUNT(1511, "Job already saved to this account", HttpStatus.BAD_REQUEST),
 
     // Location (1601 - 1700)
     LOCATION_NOT_FOUND(1601, "Location not found", HttpStatus.NOT_FOUND),

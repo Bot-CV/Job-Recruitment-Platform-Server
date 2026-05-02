@@ -20,13 +20,13 @@ public class OutboxEventServiceImpl implements OutboxEventService {
 
     @Override
     @Transactional
-    public OutboxEvent saveOutboxEvent(String aggregateType, Long aggregateId, String eventType, String payload) {
+    public OutboxEvent saveOutboxEvent(String aggregateType, String aggregateId, String eventType, String payload) {
         return saveOutboxEvent(aggregateType, aggregateId, eventType, payload, UUID.randomUUID());
     }
 
     @Override
     @Transactional
-    public OutboxEvent saveOutboxEvent(String aggregateType, Long aggregateId, String eventType, String payload,
+    public OutboxEvent saveOutboxEvent(String aggregateType, String aggregateId, String eventType, String payload,
             UUID traceId) {
         OutboxEvent event = OutboxEvent.builder()
                 .aggregateType(aggregateType)

@@ -11,7 +11,7 @@ import org.toanehihi.botcv.domain.model.ids.CompanyLocationId;
 @Builder
 @EqualsAndHashCode(of = {"company", "location"})
 @Entity
-@Table(name = "company_location")
+@Table(name = "company_locations")
 @IdClass(CompanyLocationId.class)
 public class CompanyLocation {
 

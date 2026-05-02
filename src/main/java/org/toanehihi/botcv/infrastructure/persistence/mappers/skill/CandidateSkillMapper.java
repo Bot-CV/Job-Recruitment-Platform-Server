@@ -3,7 +3,6 @@ package org.toanehihi.botcv.infrastructure.persistence.mappers.skill;
 import org.springframework.stereotype.Component;
 import org.toanehihi.botcv.domain.model.CandidateSkill;
 import org.toanehihi.botcv.interfaces.web.dtos.skill.CandidateSkillResponse;
-
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -14,7 +13,6 @@ public class CandidateSkillMapper {
     public CandidateSkillResponse toResponse(CandidateSkill candidateSkill) {
         return CandidateSkillResponse.builder()
                 .skill(skillMapper.toResponse(candidateSkill.getSkill()))
-                .level(candidateSkill.getLevel())
                 .build();
     }
 }

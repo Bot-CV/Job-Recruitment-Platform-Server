@@ -5,7 +5,6 @@ public enum EmploymentType {
     PART_TIME,
     CONTRACT,
     INTERNSHIP,
-    FREELANCE,
-    TEMPORARY,
     VOLUNTEER,
+    TEMPORARY;
 }

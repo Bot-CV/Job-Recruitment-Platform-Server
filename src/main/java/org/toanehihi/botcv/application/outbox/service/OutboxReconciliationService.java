@@ -17,7 +17,6 @@ import org.toanehihi.botcv.infrastructure.persistence.repositories.JobRepository
 import org.toanehihi.botcv.infrastructure.persistence.repositories.OutboxEventRepository;
 import org.toanehihi.botcv.interfaces.web.dtos.job.JobEventPayload;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -47,20 +46,16 @@ public class OutboxReconciliationService {
                     .filter(job -> job != null
                             && (job.getStatus() == JobStatus.PENDING || job.getStatus() == JobStatus.PUBLISHED))
                     .toList();
-            Set<Long> jobIds = new HashSet<>();
-            for (Job job : allJobs) {
-                jobIds.add(job.getId());
-            }
 
             // Collect all aggregate IDs that already have any outbox event for JOB
-            Set<Long> existingOutboxJobIds = outboxEventRepository.findDistinctAggregateIdsByAggregateType(AggregateType.JOB.name());
+            Set<String> existingOutboxJobIds = outboxEventRepository.findDistinctAggregateIdsByAggregateType(AggregateType.JOB.name());
 
             // Find missing
             int created = 0;
             for (Job job : allJobs) {
                 if (job == null || job.getId() == null)
                     continue;
-                if (existingOutboxJobIds != null && existingOutboxJobIds.contains(job.getId())) {
+                if (existingOutboxJobIds != null && existingOutboxJobIds.contains(String.valueOf(job.getId()))) {
                     continue;
                 }
 
@@ -84,7 +79,7 @@ public class OutboxReconciliationService {
             JobEventPayload eventPayload = jobMapper.toEventPayload(reloaded);
             String payload = objectMapper.writeValueAsString(eventPayload);
 
-            OutboxEvent event = outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), job.getId(), "CREATED", payload);
+            OutboxEvent event = outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), String.valueOf(job.getId()), "CREATED", payload);
 
             boolean published = redisStreamPublisher.publishToStream(event);
             if (published) {

@@ -2,8 +2,6 @@ package org.toanehihi.botcv.infrastructure.persistence.mappers.recruiter;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.toanehihi.botcv.domain.exception.AppException;
-import org.toanehihi.botcv.domain.exception.ErrorCode;
 import org.toanehihi.botcv.domain.model.Recruiter;
 import org.toanehihi.botcv.domain.model.enums.ResourceType;
 import org.toanehihi.botcv.infrastructure.persistence.mappers.company.CompanyMapper;
@@ -24,11 +22,13 @@ public class RecruiterMapper {
                 .accountId(recruiter.getAccount().getId())
                 .fullName(recruiter.getFullName())
                 .phone(recruiter.getPhone())
-                .resource(resourceMapper.toResponse(resourceRepository.findByIdAndResourceType(
-                        recruiter.getAvatarResourceId(),
-                        ResourceType.AVATAR)
-                        .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND))
-                ))
+                .resource(recruiter.getAvatarResourceId() != null
+                        ? resourceRepository.findByIdAndResourceType(
+                                recruiter.getAvatarResourceId(),
+                                ResourceType.IMAGE)
+                                .map(resourceMapper::toResponse)
+                                .orElse(null)
+                        : null)
                 .email(recruiter.getAccount().getEmail())
                 .company(companyMapper.toResponse(recruiter.getCompany()))
                 .dateCreated(recruiter.getDateCreated())

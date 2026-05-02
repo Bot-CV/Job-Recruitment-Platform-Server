@@ -87,8 +87,10 @@ public class RecruiterServiceImpl implements RecruiterService {
     public CompanyResponse updateCompany(CompanyRequest request) {
         Recruiter recruiter = getCurrentRecruiter();
 
-        Company company = companyRepository.findByRecruiter(recruiter)
-                .orElseThrow(() -> new AppException(ErrorCode.RECRUITER_COMPANY_NOT_FOUND));
+        Company company = recruiter.getCompany();
+        if (company == null) {
+            throw new AppException(ErrorCode.RECRUITER_COMPANY_NOT_FOUND);
+        }
 
         Set<CompanyLocation> updatedLocations = new HashSet<>();
         for (CompanyLocationRequest locationRequest : request.getCompanyLocations()) {
@@ -126,11 +128,11 @@ public class RecruiterServiceImpl implements RecruiterService {
         }
         CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(file, "avatar");
         Resource resource = Resource.builder()
-                .mimeType(fileInfo.mimeType())
-                .resourceType(ResourceType.AVATAR)
-                .url(fileInfo.url())
+                .contentType(fileInfo.contentType())
+                .resourceType(ResourceType.IMAGE)
                 .publicId(fileInfo.publicId())
-                .name("avatar")
+                .size(fileInfo.size())
+                .name(fileInfo.fileName())
                 .build();
         Resource savedResource = resourceRepository.save(resource);
         return resourceMapper.toResponse(savedResource);

@@ -30,4 +30,6 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
 
 
     Optional<List<JobApplication>> findTop3ByJobCompanyIdOrderByAppliedAtDesc(Long companyId);
+
+    Optional<JobApplication> findFirstByCvResourceId(Long cvResourceId);
 }

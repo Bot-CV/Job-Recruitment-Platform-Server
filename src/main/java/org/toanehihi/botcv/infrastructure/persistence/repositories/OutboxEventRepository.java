@@ -19,8 +19,8 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> 
     @Query("SELECT e FROM OutboxEvent e WHERE e.status = :status ORDER BY e.occurredAt ASC")
     List<OutboxEvent> findPendingEvents(@Param("status") OutboxStatus status);
 
-    boolean existsByAggregateTypeAndAggregateId(String aggregateType, Long aggregateId);
+    boolean existsByAggregateTypeAndAggregateId(String aggregateType, String aggregateId);
 
     @Query("SELECT DISTINCT e.aggregateId FROM OutboxEvent e WHERE e.aggregateType = :aggregateType")
-    Set<Long> findDistinctAggregateIdsByAggregateType(@Param("aggregateType") String aggregateType);
+    Set<String> findDistinctAggregateIdsByAggregateType(@Param("aggregateType") String aggregateType);
 }

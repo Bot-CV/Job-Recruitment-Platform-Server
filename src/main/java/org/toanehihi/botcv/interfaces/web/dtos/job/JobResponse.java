@@ -17,7 +17,7 @@ public class JobResponse {
     private String title;
     private String company;
     private String logo;
-    private String jobRole;
+    private String category;
     private SeniorityLevel seniority;
     private int minExperienceYears;
     private String location;

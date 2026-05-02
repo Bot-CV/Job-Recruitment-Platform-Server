@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.toanehihi.botcv.domain.model.Company;
+import org.toanehihi.botcv.domain.model.enums.CompanySize;
 import org.toanehihi.botcv.domain.model.enums.ResourceType;
 import org.toanehihi.botcv.infrastructure.persistence.mappers.resource.ResourceMapper;
 import org.toanehihi.botcv.infrastructure.persistence.repositories.ResourceRepository;
@@ -24,7 +25,7 @@ public class CompanyMapper {
     public void updateCompany(Company company, CompanyRequest request) {
         company.setName(request.getName());
         company.setWebsite(request.getWebsite());
-        company.setSize(request.getWebsite());
+        company.setSize(CompanySize.valueOf(request.getSize()));
         company.setDescription(request.getDescription());
         company.setPhone(request.getPhone());
         company.setEmail(request.getEmail());
@@ -36,12 +37,12 @@ public class CompanyMapper {
                 .id(company.getId())
                 .name(company.getName())
                 .website(company.getWebsite())
-                .size(company.getSize())
+                .size(company.getSize() != null ? company.getSize().name() : null)
                 .email(company.getEmail())
                 .phone(company.getPhone())
                 .industry(company.getIndustry())
                 .description(company.getDescription())
-                .resource(resourceRepository.findByIdAndResourceType(company.getLogoResourceId(), ResourceType.COMPANY_LOGO)
+                .resource(resourceRepository.findByIdAndResourceType(company.getLogoResourceId(), ResourceType.IMAGE)
                         .map(resourceMapper::toResponse)
                         .orElse(null))
                 .verified(company.isVerified())

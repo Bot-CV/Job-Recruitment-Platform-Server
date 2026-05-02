@@ -10,5 +10,4 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CandidateSkillResponse {
     private SkillResponse skill;
-    private Integer level;
 }

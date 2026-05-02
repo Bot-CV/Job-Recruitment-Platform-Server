@@ -5,56 +5,48 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.toanehihi.botcv.domain.model.JobFamily;
-import org.toanehihi.botcv.domain.model.JobRole;
-import org.toanehihi.botcv.domain.model.SubFamily;
-import org.toanehihi.botcv.infrastructure.persistence.repositories.JobFamilyRepository;
-import org.toanehihi.botcv.infrastructure.persistence.repositories.JobRoleRepository;
-import org.toanehihi.botcv.infrastructure.persistence.repositories.SubFamilyRepository;
+import org.toanehihi.botcv.domain.model.JobCategory;
+import org.toanehihi.botcv.infrastructure.persistence.repositories.JobCategoryRepository;
 import org.toanehihi.botcv.interfaces.web.dtos.PageResult;
 import org.toanehihi.botcv.interfaces.web.dtos.job.category.CreateCategoryRequest;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class JobCategoryServiceImpl implements JobCategoryService {
-    private final JobFamilyRepository jobFamilyRepository;
-    private final SubFamilyRepository subFamilyRepository;
-    private final JobRoleRepository jobRoleRepository;
+    private final JobCategoryRepository jobCategoryRepository;
 
     @Override
-    public PageResult<JobFamily> getJobFamily(int page, int size, String sortBy, String sortDir) {
+    public PageResult<JobCategory> getCategories(int page, int size, String sortBy, String sortDir) {
         Sort.Direction direction = sortDir.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        return PageResult.from(jobFamilyRepository.findAll(pageable));
+        return PageResult.from(jobCategoryRepository.findAll(pageable));
     }
 
     @Override
-    public JobFamily createJobFamily(CreateCategoryRequest request) {
-        JobFamily jobFamily = JobFamily.builder()
+    public JobCategory createCategory(Long parentId, CreateCategoryRequest request) {
+        JobCategory.JobCategoryBuilder builder = JobCategory.builder()
                 .name(request.getName())
-                .slug(request.getName().toLowerCase().replace(" ", "-"))
-                .build();
-        return jobFamilyRepository.save(jobFamily);
+                .slug(request.getName().toLowerCase().replace(" ", "-"));
+
+        if (parentId != null) {
+            JobCategory parent = jobCategoryRepository.findById(parentId)
+                    .orElseThrow(() -> new IllegalArgumentException("Parent category not found"));
+            builder.parent(parent);
+        }
+
+        return jobCategoryRepository.save(builder.build());
     }
 
     @Override
-    public SubFamily createSubFamily(Long jobFamilyId, CreateCategoryRequest request) {
-        SubFamily subFamily = SubFamily.builder()
-                .name(request.getName())
-                .jobFamily(JobFamily.builder().id(jobFamilyId).build())
-                .build();
-        return subFamilyRepository.save(subFamily);
+    public List<JobCategory> getRootCategories() {
+        return jobCategoryRepository.findByParentIsNull();
     }
 
     @Override
-    public JobRole createJobRole(Long subFamilyId, CreateCategoryRequest request) {
-        JobRole jobRole = JobRole.builder()
-                .name(request.getName())
-                .subFamily(SubFamily.builder().id(subFamilyId).build())
-                .build();
-        return jobRoleRepository.save(jobRole);
+    public List<JobCategory> getChildCategories(Long parentId) {
+        return jobCategoryRepository.findByParentId(parentId);
     }
-
-
 }

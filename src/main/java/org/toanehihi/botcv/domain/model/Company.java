@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.toanehihi.botcv.domain.model.enums.CompanySize;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -19,50 +20,48 @@ import java.util.Set;
 @Table(name = "companies")
 public class Company {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(name = "name")
-	private String name;
+    @Column(name = "name")
+    private String name;
 
-	@Column(name = "website")
-	private String website;
+    @Column(name = "website")
+    private String website;
 
-	private String description;
+    private String description;
 
-	private String phone;
+    private String phone;
 
-	private String email;
+    private String email;
 
-	private String industry;
+    private String industry;
 
-	@Column(name = "size")
-	private String size;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "size", columnDefinition = "company_size")
+    private CompanySize size;
 
-	@Column(name = "logo_resource_id")
-	private Long logoResourceId;
+    @Column(name = "logo_resource_id")
+    private Long logoResourceId;
 
-	@Column(name = "verified")
-	@Builder.Default
-	private boolean verified = false;
+    @Column(name = "is_verified")
+    @Builder.Default
+    private boolean verified = false;
 
-	@CreationTimestamp
-	@Column(name = "date_created")
-	private OffsetDateTime dateCreated;
+    @CreationTimestamp
+    @Column(name = "date_created")
+    private OffsetDateTime dateCreated;
 
-	@UpdateTimestamp
-	@Column(name = "date_updated")
-	private OffsetDateTime dateUpdated;
+    @UpdateTimestamp
+    @Column(name = "date_updated")
+    private OffsetDateTime dateUpdated;
 
-	@OneToOne(mappedBy = "company")
-	private Recruiter recruiter;
+    @OneToMany(mappedBy = "company")
+    @Builder.Default
+    private Set<Recruiter> recruiters = new HashSet<>();
 
-	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
-	@Builder.Default
-	private Set<CompanyLocation> companyLocations = new HashSet<>();
-
-	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
-	@Builder.Default
-	private Set<AttestationResource> attestations = new HashSet<>();
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<CompanyLocation> companyLocations = new HashSet<>();
 }

@@ -273,10 +273,9 @@ public class AuthServiceImpl implements AuthService {
         if (resource == null) {
             return resourceRepository.save(Resource.builder()
                     .publicId("default-avatar")
-                    .url("https://www.lutzlawoffice.com/wp-content/uploads/2021/08/default-avatar.png")
-                    .resourceType(ResourceType.AVATAR)
-                    .mimeType("image/jpeg")
+                    .resourceType(ResourceType.IMAGE)
                     .contentType("image/jpeg")
+                    .size(0L)
                     .name("default-avatar")
                     .build());
         }

@@ -37,7 +37,7 @@ public class JobApplicationMapper {
                 .company(companyMapper.toResponse(ja.getJob().getCompany()))
                 .status(jobApplication.getStatus())
                 .resource(resourceMapper
-                        .toResponse(resourceRepository.findByIdAndResourceType(jobApplication.getCvResourceId(), ResourceType.CV)
+                        .toResponse(resourceRepository.findByIdAndResourceType(jobApplication.getCvResourceId(), ResourceType.DOCUMENT)
                                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND))))
                 .appliedAt(jobApplication.getAppliedAt())
                 .build();
@@ -45,10 +45,10 @@ public class JobApplicationMapper {
 
     public JobApplicantResponse toApplicantResponse(JobApplication jobApplication) {
         List<Resource> resources = new ArrayList<>();
-        Resource cvResource = resourceRepository.findByIdAndResourceType(jobApplication.getCvResourceId(), ResourceType.CV)
+        Resource cvResource = resourceRepository.findByIdAndResourceType(jobApplication.getCvResourceId(), ResourceType.DOCUMENT)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        Resource avatarResource = resourceRepository.findByIdAndResourceType(jobApplication.getCandidate().getAvatarResourceId(), ResourceType.AVATAR)
+        Resource avatarResource = resourceRepository.findByIdAndResourceType(jobApplication.getCandidate().getAvatarResourceId(), ResourceType.IMAGE)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
         resources.add(cvResource);
         resources.add(avatarResource);
