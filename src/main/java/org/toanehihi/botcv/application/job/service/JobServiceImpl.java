@@ -42,7 +42,7 @@ public class JobServiceImpl implements JobService {
     private final JobRepository jobRepository;
     private final JobMapper jobMapper;
     private final LocationRepository locationRepository;
-    private final JobRoleRepository jobRoleRepository;
+    private final JobCategoryRepository jobCategoryRepository;
     private final SkillRepository skillRepository;
     private final RecruiterRepository recruiterRepository;
     private final JobApplicationRepository jobApplicationRepository;
@@ -50,7 +50,7 @@ public class JobServiceImpl implements JobService {
     private final OutboxEventService outboxEventService;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
-    
+
     @Value("${app.search-service-url}")
     private String searchServiceUrl;
 
@@ -89,8 +89,8 @@ public class JobServiceImpl implements JobService {
 
         Location location = locationRepository.findById(request.getLocationId())
                 .orElseThrow(() -> new AppException(ErrorCode.LOCATION_NOT_FOUND));
-        JobRole jobRole = jobRoleRepository.findById(request.getJobRoleId())
-                .orElseThrow(() -> new AppException(ErrorCode.JOB_ROLE_NOT_FOUND));
+        JobCategory category = jobCategoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new AppException(ErrorCode.JOB_CATEGORY_NOT_FOUND));
 
         Set<Skill> skills = request.getSkills().stream()
                 .map(skill -> skillRepository.findByName(skill)
@@ -104,7 +104,8 @@ public class JobServiceImpl implements JobService {
         job.setCompany(recruiter.getCompany());
         job.setSkills(skills);
         job.setLocation(location);
-        job.setJobRole(jobRole);
+        job.setCategory(category);
+        job.setRecruiter(recruiter);
         job.setDatePosted(OffsetDateTime.now());
         job.setStatus(request.isSaveAsDraft() ? JobStatus.DRAFT : JobStatus.PENDING);
         job.getDescription().setJob(job);
@@ -112,11 +113,10 @@ public class JobServiceImpl implements JobService {
         job = jobRepository.save(job);
         jobDescriptionRepository.save(job.getDescription());
 
-        // Save outbox event for job creation
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), job.getId(), CREATE_EVENT, payload);
+            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), String.valueOf(job.getId()), CREATE_EVENT, payload);
             log.debug("Saved outbox event for job creation: jobId={}", job.getId());
         } catch (Exception e) {
             log.error("Failed to save outbox event for job creation: jobId={}, error={}",
@@ -146,11 +146,10 @@ public class JobServiceImpl implements JobService {
 
         jobRepository.save(job);
 
-        // Save outbox event for job update
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), job.getId(), UPDATE_EVENT, payload);
+            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), String.valueOf(job.getId()), UPDATE_EVENT, payload);
             log.debug("Saved outbox event for job update: jobId={}", job.getId());
         } catch (Exception e) {
             log.error("Failed to save outbox event for job update: jobId={}, error={}",
@@ -202,10 +201,10 @@ public class JobServiceImpl implements JobService {
     }
 
     private void updateJobRelations(Job job, UpdateJobRequest request) {
-        if (request.getJobRoleId() != null) {
-            JobRole jobRole = jobRoleRepository.findById(request.getJobRoleId())
-                    .orElseThrow(() -> new AppException(ErrorCode.JOB_ROLE_NOT_FOUND));
-            job.setJobRole(jobRole);
+        if (request.getCategoryId() != null) {
+            JobCategory category = jobCategoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new AppException(ErrorCode.JOB_CATEGORY_NOT_FOUND));
+            job.setCategory(category);
         }
 
         if (request.getSkills() != null && !request.getSkills().isEmpty()) {
@@ -277,11 +276,10 @@ public class JobServiceImpl implements JobService {
 
         job = jobRepository.save(job);
 
-        // Save outbox event for job cancellation
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), job.getId(), UPDATE_EVENT, payload);
+            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), String.valueOf(job.getId()), UPDATE_EVENT, payload);
             log.debug("Saved outbox event for job cancellation: jobId={}", job.getId());
         } catch (Exception e) {
             log.error("Failed to save outbox event for job cancellation: jobId={}, error={}",
@@ -307,11 +305,10 @@ public class JobServiceImpl implements JobService {
         job.setStatus(action.equals("APPROVE") ? JobStatus.PUBLISHED : JobStatus.CANCELED);
         job = jobRepository.save(job);
 
-        // Save outbox event for job moderation
         JobEventPayload eventPayload = jobMapper.toEventPayload(job);
         try {
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), job.getId(), UPDATE_EVENT, payload);
+            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), String.valueOf(job.getId()), UPDATE_EVENT, payload);
             log.debug("Saved outbox event for job moderation: jobId={}, action={}", job.getId(), action);
         } catch (Exception e) {
             log.error("Failed to save outbox event for job moderation: jobId={}, action={}, error={}",
@@ -324,14 +321,11 @@ public class JobServiceImpl implements JobService {
     @Override
     public PageResult<JobResponse> searchJobByTitle(JobSearchRequest request) {
         try {
-            // Setup HTTP headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // Wrap request body in HttpEntity
             HttpEntity<JobSearchRequest> httpEntity = new HttpEntity<>(request, headers);
 
-            // Make POST request with proper entity
             JobSearchServiceResponse response = restTemplate.postForObject(
                     searchServiceUrl,
                     httpEntity,
@@ -368,11 +362,10 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.JOB_NOT_FOUND));
 
-        // Save outbox event for job deletion before deleting
         try {
             JobEventPayload eventPayload = jobMapper.toEventPayload(job);
             String payload = objectMapper.writeValueAsString(eventPayload);
-            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), job.getId(), DELETE_EVENT, payload);
+            outboxEventService.saveOutboxEvent(AggregateType.JOB.name(), String.valueOf(job.getId()), DELETE_EVENT, payload);
             log.debug("Saved outbox event for job deletion: jobId={}", job.getId());
         } catch (Exception e) {
             log.error("Failed to save outbox event for job deletion: jobId={}, error={}",

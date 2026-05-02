@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 public class CreateJobRequest {
     private String title;
-    private Long jobRoleId;
+    private Long categoryId;
     private SeniorityLevel seniorityLevel;
     private EmploymentType employmentType;
     private int minExperienceYears;

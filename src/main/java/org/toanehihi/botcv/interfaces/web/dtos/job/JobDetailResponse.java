@@ -16,7 +16,7 @@ public class JobDetailResponse {
     private Long id;
     private String title;
     private String company;
-    private String jobRole;
+    private String category;
     private SeniorityLevel seniority;
     private int minExperienceYears;
     private String location;

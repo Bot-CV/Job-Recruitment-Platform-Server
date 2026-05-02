@@ -16,7 +16,7 @@ public class JobEventPayload {
     private Long id;
     private String title;
     private String company;
-    private String jobRole;
+    private String category;
     private String description;
     private SeniorityLevel seniority;
     private int minExperienceYears;

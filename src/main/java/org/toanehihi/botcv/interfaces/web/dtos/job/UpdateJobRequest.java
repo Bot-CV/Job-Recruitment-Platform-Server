@@ -7,7 +7,7 @@ import java.util.List;
 @Getter
 public class UpdateJobRequest {
     private String title;
-    private Long jobRoleId;
+    private Long categoryId;
     private String seniorityLevel;
     private String employmentType;
     private Integer minExperienceYears;
