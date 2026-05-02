@@ -22,18 +22,18 @@ public class JobMapper {
     private final ResourceRepository resourceRepository;
 
     public JobResponse toResponse(Job job) {
-        String companyLogoUrl = null;
+        String companyLogoPublicId = null;
         if (job.getCompany() != null && job.getCompany().getLogoResourceId() != null) {
-            companyLogoUrl = resourceRepository.findById(job.getCompany().getLogoResourceId())
-                    .map(Resource::getUrl)
+            companyLogoPublicId = resourceRepository.findById(job.getCompany().getLogoResourceId())
+                    .map(Resource::getPublicId)
                     .orElse(null);
         }
         return JobResponse.builder()
                 .id(job.getId())
                 .title(job.getTitle())
                 .company(job.getCompany().getName())
-                .logo(companyLogoUrl)
-                .jobRole(job.getJobRole().getName())
+                .logo(companyLogoPublicId)
+                .category(job.getCategory() != null ? job.getCategory().getName() : null)
                 .seniority(job.getSeniority())
                 .minExperienceYears(job.getMinExperienceYears())
                 .location(extractLocation(job.getLocation()))
@@ -44,7 +44,7 @@ public class JobMapper {
                 .datePosted(job.getDatePosted())
                 .dateExpires(job.getDateExpires())
                 .status(job.getStatus())
-                .maxCandidates(job.getMaxCandidates() != null ? job.getMaxCandidates() : null)
+                .maxCandidates(job.getMaxCandidates())
                 .skills(job.getSkills().stream().map(skillMapper::toResponse).toList())
                 .build();
     }
@@ -54,7 +54,7 @@ public class JobMapper {
                 .id(job.getId())
                 .title(job.getTitle())
                 .company(job.getCompany().getName())
-                .jobRole(job.getJobRole().getName())
+                .category(job.getCategory() != null ? job.getCategory().getName() : null)
                 .seniority(job.getSeniority())
                 .minExperienceYears(job.getMinExperienceYears())
                 .location(extractLocation(job.getLocation()))
@@ -65,7 +65,7 @@ public class JobMapper {
                 .datePosted(job.getDatePosted())
                 .dateExpires(job.getDateExpires())
                 .status(job.getStatus())
-                .maxCandidates(job.getMaxCandidates() != null ? job.getMaxCandidates() : null)
+                .maxCandidates(job.getMaxCandidates())
                 .responsibilities(
                         job.getDescription().getResponsibilities() != null ? job.getDescription().getResponsibilities()
                                 : "")
@@ -82,16 +82,14 @@ public class JobMapper {
     public Job toEntity(CreateJobRequest request) {
         return Job.builder()
                 .title(request.getTitle())
-                .jobRole(null)
                 .seniority(request.getSeniorityLevel())
                 .employmentType(request.getEmploymentType())
                 .minExperienceYears(request.getMinExperienceYears())
-                .location(null)
                 .workMode(request.getWorkMode())
                 .salaryMin(request.getSalaryMin())
                 .salaryMax(request.getSalaryMax())
                 .currency(request.getCurrency())
-                .maxCandidates(request.getMaxCandidates() != null ? request.getMaxCandidates() : null)
+                .maxCandidates(request.getMaxCandidates())
                 .dateExpires(request.getDateExpires())
                 .description(JobDescription.builder()
                         .summary(request.getSummary())
@@ -113,7 +111,7 @@ public class JobMapper {
                 .location(extractLocation(job.getLocation()))
                 .description(buildDescription(job.getDescription()))
                 .company(job.getCompany().getName())
-                .jobRole(job.getJobRole().getName())
+                .category(job.getCategory() != null ? job.getCategory().getName() : null)
                 .seniority(job.getSeniority())
                 .minExperienceYears(job.getMinExperienceYears())
                 .workMode(job.getWorkMode())

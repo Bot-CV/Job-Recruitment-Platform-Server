@@ -47,11 +47,11 @@ public interface JobRepository extends JpaRepository<Job, Long> {
             """, nativeQuery = true)
     List<Job> findNewestJob(Long companyId);
 
-    @Query("select j from Job j\n" +
-            " left join fetch j.skills s\n" +
-            " left join fetch j.jobRole jr\n" +
-            " left join fetch j.location l\n" +
-            " left join fetch j.company c\n" +
+    @Query("select j from Job j" +
+            " left join fetch j.skills s" +
+            " left join fetch j.category cat" +
+            " left join fetch j.location l" +
+            " left join fetch j.company c" +
             " where j.id = :id")
     Optional<Job> findByIdWithRelations(@NonNull Long id);
 
