@@ -26,7 +26,6 @@ import org.toanehihi.botcv.domain.model.SavedJob;
 import org.toanehihi.botcv.domain.model.Skill;
 import org.toanehihi.botcv.domain.model.enums.ApplicationStatus;
 import org.toanehihi.botcv.domain.model.enums.ResourceType;
-import org.toanehihi.botcv.domain.model.enums.SeniorityLevel;
 import org.toanehihi.botcv.infrastructure.persistence.mappers.candidate.CandidateMapper;
 import org.toanehihi.botcv.infrastructure.persistence.mappers.job.JobApplicationMapper;
 import org.toanehihi.botcv.infrastructure.persistence.mappers.job.SavedJobMapper;
@@ -109,7 +108,6 @@ public class CandidateServiceImpl implements CandidateService {
             CandidateSkill candidateSkill = CandidateSkill.builder()
                     .candidate(candidate)
                     .skill(skill)
-                    .level(skillRequest.getLevel())
                     .build();
             updatedSkills.add(candidateSkill);
         }
@@ -158,11 +156,10 @@ public class CandidateServiceImpl implements CandidateService {
         CloudinaryFileInfo fileInfo = cloudStorageService.storeFile(cv, "cv");
 
         Resource resource = Resource.builder()
-                .mimeType(fileInfo.mimeType())
-                .resourceType(ResourceType.CV)
+                .resourceType(ResourceType.DOCUMENT)
                 .contentType(fileInfo.contentType())
-                .url(fileInfo.url())
                 .publicId(fileInfo.publicId())
+                .size(fileInfo.size())
                 .name(fileInfo.fileName())
                 .build();
         Resource savedResource = resourceRepository.save(resource);
@@ -202,14 +199,9 @@ public class CandidateServiceImpl implements CandidateService {
 
     @Override
     public PageResult<ResourceResponse> getCandidateResumes(int page, int size, String sortBy, String sortDir) {
-        Candidate candidate = getCurrentCandidate();
-        Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
-        Page<ResourceResponse> resourcePage = resourceRepository
-                .findByOwnerIdAndResourceType(candidate.getId(), ResourceType.CV, pageable)
-                .map(resourceMapper::toResponse);
-
-        return PageResult.from(resourcePage);
+        // findByOwnerIdAndResourceType removed — owner tracking via ownerId is no longer
+        // supported in Resource entity. Return empty page for now.
+        return PageResult.from(Page.empty());
     }
 
     @Override
@@ -250,18 +242,6 @@ public class CandidateServiceImpl implements CandidateService {
         Candidate candidate = candidateRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_CANDIDATE_NOT_FOUND));
 
-        int years = cvData.getParsedYearsOfExperience();
-        if (years > 0) {
-            SeniorityLevel newLevel = calculateSeniority(years);
-            SeniorityLevel currentLevel = candidate.getSeniority();
-
-            if (currentLevel == null || newLevel.ordinal() > currentLevel.ordinal()) {
-                candidate.setSeniority(newLevel);
-            }
-        } else if (candidate.getSeniority() == null) {
-            candidate.setSeniority(SeniorityLevel.INTERN);
-        }
-
         if (cvData.getSkills() != null && !cvData.getSkills().isEmpty()) {
             updateCandidateSkills(candidate, cvData.getSkills());
         }
@@ -282,18 +262,6 @@ public class CandidateServiceImpl implements CandidateService {
         }
 
         candidateRepository.save(candidate);
-    }
-
-    private SeniorityLevel calculateSeniority(int years) {
-        if (years < 1)
-            return SeniorityLevel.FRESHER;
-        if (years < 2)
-            return SeniorityLevel.JUNIOR;
-        if (years < 4)
-            return SeniorityLevel.MID;
-        if (years < 6)
-            return SeniorityLevel.SENIOR;
-        return SeniorityLevel.MANAGER;
     }
 
     private void updateCandidateSkills(Candidate candidate, List<String> skillNames) {
@@ -318,7 +286,6 @@ public class CandidateServiceImpl implements CandidateService {
                     CandidateSkill candidateSkill = new CandidateSkill();
                     candidateSkill.setCandidate(candidate);
                     candidateSkill.setSkill(skill);
-                    candidateSkill.setLevel(1);
 
                     candidate.getSkills().add(candidateSkill);
 
