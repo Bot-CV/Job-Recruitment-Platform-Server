@@ -1,26 +1,24 @@
 -- =====================================================
--- Database Schema Script
--- Job Recruitment Platform
+-- EXTENSIONS
 -- =====================================================
+
+CREATE EXTENSION IF NOT EXISTS ltree;
+
 -- =====================================================
--- ENUMS
+-- ENUM TYPES
 -- =====================================================
+
 CREATE TYPE seniority_level AS ENUM (
-    'INTERN',
-    'FRESHER',
-    'JUNIOR',
-    'MID',
-    'SENIOR',
-    'MANAGER'
+  'INTERN', 'FRESHER', 'JUNIOR', 'MID', 'SENIOR', 'MANAGER'
+);
+
+CREATE TYPE experience_years AS ENUM (
+  'NO_EXPERIENCE', 'UNDER_1_YEAR', 'ONE_YEAR', 'TWO_YEARS',
+  'THREE_YEARS', 'FOUR_YEARS', 'FIVE_YEARS', 'OVER_5_YEARS'
 );
 
 CREATE TYPE employment_type AS ENUM (
-    'FULL_TIME',
-    'PART_TIME',
-    'CONTRACT',
-    'INTERNSHIP',
-    'VOLUNTEER',
-    'TEMPORARY'
+  'FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP', 'VOLUNTEER', 'TEMPORARY'
 );
 
 CREATE TYPE account_status AS ENUM ('ACTIVE', 'SUSPENDED');
@@ -29,449 +27,427 @@ CREATE TYPE auth_provider AS ENUM ('LOCAL', 'GOOGLE');
 
 CREATE TYPE work_mode AS ENUM ('ONSITE', 'REMOTE', 'HYBRID');
 
-CREATE TYPE job_status AS ENUM (
-    'DRAFT',
-    'PENDING',
-    'PUBLISHED',
-    'EXPIRED',
-    'CANCELED'
-);
+CREATE TYPE job_status AS ENUM ('DRAFT', 'PENDING', 'PUBLISHED', 'EXPIRED', 'CANCELED');
 
 CREATE TYPE application_status AS ENUM (
-    'SUBMITTED',
-    'REVIEWED',
-    'INTERVIEW',
-    'OFFERED',
-    'REJECTED'
+  'SUBMITTED', 'REVIEWED', 'INTERVIEW', 'OFFERED', 'REJECTED'
 );
 
-CREATE TYPE resource_type AS ENUM (
-    'AVATAR',
-    'CV',
-    'COMPANY_LOGO',
-    'JOB_ATTACHMENT',
-    'ATTESTATION'
-);
+CREATE TYPE verification_status AS ENUM ('SUBMITTED', 'APPROVED', 'REJECTED');
 
-CREATE TYPE event_type AS ENUM (
-    'SEARCH_QUERY',
-    'JOB_VIEWED',
-    'JOB_APPLIED',
-    'JOB_SAVED'
-);
+CREATE TYPE resource_type AS ENUM ('IMAGE', 'DOCUMENT', 'VIDEO');
 
 CREATE TYPE interaction_event_type AS ENUM (
-    'APPLY',
-    'SAVE',
-    'CLICK',
-    'CLICK_FROM_SEARCH',
-    'CLICK_FROM_SIMILAR',
-    'CLICK_FROM_RECOMMENDED',
-    'SKIP_FROM_SEARCH',
-    'SKIP_FROM_SIMILAR',
-    'SKIP_FROM_RECOMMENDED'
+  'APPLY', 'SAVE', 'CLICK',
+  'CLICK_FROM_SEARCH', 'CLICK_FROM_SIMILAR', 'CLICK_FROM_RECOMMENDED',
+  'SKIP_FROM_SEARCH', 'SKIP_FROM_SIMILAR', 'SKIP_FROM_RECOMMENDED'
 );
 
 CREATE TYPE interview_status AS ENUM ('SCHEDULED', 'COMPLETED', 'CANCELED', 'NO_SHOW');
 
 CREATE TYPE outbox_status AS ENUM ('PENDING', 'SENT', 'FAILED', 'DLQ');
 
--- =====================================================
--- CORE TABLES
--- =====================================================
-CREATE TABLE
-    roles (
-        id BIGSERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL UNIQUE
-    );
-
--- permissions removed
-CREATE TABLE
-    accounts (
-        id BIGSERIAL PRIMARY KEY,
-        email VARCHAR(255) NOT NULL UNIQUE,
-        password VARCHAR(255),
-        role_id BIGINT NOT NULL,
-        status account_status NOT NULL DEFAULT 'ACTIVE',
-        provider auth_provider NOT NULL,
-        verified_at TIMESTAMPTZ (3),
-        date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        date_updated TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        CONSTRAINT fk_accounts_role FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE RESTRICT
-    );
-
-CREATE INDEX idx_accounts_email ON accounts (email);
-
-CREATE INDEX idx_accounts_role ON accounts (role_id);
-
-CREATE INDEX idx_accounts_status ON accounts (status);
+CREATE TYPE company_size AS ENUM ('MICRO', 'SMALL', 'MEDIUM', 'LARGE', 'ENTERPRISE');
 
 -- =====================================================
--- LOCATION TABLES
+-- CORE — RBAC & ACCOUNTS
 -- =====================================================
-CREATE TABLE
-    locations (
-        id BIGSERIAL PRIMARY KEY,
-        street_address VARCHAR(255),
-        ward VARCHAR(120),
-        district VARCHAR(120),
-        province_city VARCHAR(120),
-        country VARCHAR(120),
-        lat DECIMAL(10, 7),
-        lng DECIMAL(10, 7)
-    );
 
-CREATE INDEX idx_locations_province_city ON locations (province_city);
+CREATE TABLE roles (
+  id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name       VARCHAR(100) UNIQUE NOT NULL,
+  date_created TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-CREATE INDEX idx_locations_district ON locations (district);
+CREATE TABLE permissions (
+  id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name       VARCHAR(100) UNIQUE NOT NULL,
+  date_created TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-CREATE INDEX idx_locations_country ON locations (country);
+CREATE TABLE role_permissions (
+  role_id       BIGINT NOT NULL REFERENCES roles(id),
+  permission_id BIGINT NOT NULL REFERENCES permissions(id),
+  PRIMARY KEY (role_id, permission_id)
+);
 
--- =====================================================
--- COMPANY TABLES
--- =====================================================
-CREATE TABLE
-    companies (
-        id BIGSERIAL PRIMARY KEY,
-        name VARCHAR(200) NOT NULL,
-        website VARCHAR(255),
-        size VARCHAR(50), -- Số lượng nhân viên thể hiện quy mô công ty
-        description TEXT,
-        phone VARCHAR(20),
-        email VARCHAR(255),
-        industry VARCHAR(100),
-        logo_resource_id BIGINT,
-        verified BOOLEAN NOT NULL DEFAULT FALSE,
-        date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        date_updated TIMESTAMPTZ (3) NOT NULL DEFAULT NOW ()
-    );
+CREATE TABLE accounts (
+  id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  email        VARCHAR(255) UNIQUE NOT NULL,
+  password     VARCHAR(255),
+  role_id      BIGINT NOT NULL REFERENCES roles(id),
+  status       account_status NOT NULL DEFAULT 'ACTIVE',
+  provider     auth_provider NOT NULL,
+  verified_at  TIMESTAMPTZ,
+  date_created TIMESTAMPTZ NOT NULL DEFAULT now(),
+  date_updated TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-CREATE INDEX idx_companies_name ON companies (name);
-
-CREATE INDEX idx_companies_verified ON companies (verified);
-
-CREATE TABLE
-    company_location (
-        company_id BIGINT NOT NULL,
-        location_id BIGINT NOT NULL,
-        is_headquarter BOOLEAN DEFAULT FALSE,
-        PRIMARY KEY (company_id, location_id),
-        CONSTRAINT fk_company_location_company FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
-        CONSTRAINT fk_company_location_location FOREIGN KEY (location_id) REFERENCES locations (id) ON DELETE CASCADE
-    );
-
-CREATE INDEX idx_company_location_company ON company_location (company_id);
-
-CREATE INDEX idx_company_location_location ON company_location (location_id);
+CREATE INDEX idx_accounts_email ON accounts(email);
+CREATE INDEX idx_accounts_status_provider ON accounts(status, provider);
 
 -- =====================================================
--- USER PROFILE TABLES
+-- LOCATIONS
 -- =====================================================
-CREATE TABLE
-    candidates (
-        id BIGSERIAL PRIMARY KEY,
-        account_id BIGINT NOT NULL UNIQUE,
-        full_name VARCHAR(150),
-        phone VARCHAR(20),
-        location_id BIGINT,
-        seniority seniority_level,
-        salary_expect_min INTEGER,
-        salary_expect_max INTEGER,
-        currency VARCHAR(10),
-        remote_pref BOOLEAN,
-        relocation_pref BOOLEAN,
-        avatar_resource_id BIGINT NOT NULL,
-        bio TEXT,
-        date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        date_updated TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        CONSTRAINT fk_candidates_account FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE,
-        CONSTRAINT fk_candidates_location FOREIGN KEY (location_id) REFERENCES locations (id) ON DELETE SET NULL
-    );
 
-CREATE INDEX idx_candidates_account ON candidates (account_id);
+CREATE TABLE locations (
+  id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  street_address VARCHAR(255),
+  ward           VARCHAR(120),
+  district       VARCHAR(120),
+  province_city  VARCHAR(120),
+  country        VARCHAR(120),
+  lat            DECIMAL(10, 7),
+  lng            DECIMAL(10, 7),
+  date_created   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  date_updated   TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-CREATE INDEX idx_candidates_location ON candidates (location_id);
-
-CREATE INDEX idx_candidates_seniority ON candidates (seniority);
-
-CREATE TABLE
-    recruiters (
-        id BIGSERIAL PRIMARY KEY,
-        account_id BIGINT NOT NULL UNIQUE,
-        full_name VARCHAR(150),
-        phone VARCHAR(20),
-        avatar_resource_id BIGINT NOT NULL,
-        company_id BIGINT NOT NULL UNIQUE,
-        date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        date_updated TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        CONSTRAINT fk_recruiters_account FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE,
-        CONSTRAINT fk_recruiters_company FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
-    );
-
-CREATE INDEX idx_recruiters_account ON recruiters (account_id);
-
-CREATE INDEX idx_recruiters_company ON recruiters (company_id);
+  CONSTRAINT chk_locations_lat CHECK (lat BETWEEN -90 AND 90),
+  CONSTRAINT chk_locations_lng CHECK (lng BETWEEN -180 AND 180)
+);
 
 -- =====================================================
--- JOB TAXONOMY TABLES
+-- RESOURCES
 -- =====================================================
-CREATE TABLE
-    job_families (
-        id BIGSERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL UNIQUE, -- Công nghệ thông tin, Thiết kế, Logistics/Thu mua/Kho/Vận tải, ...
-        slug VARCHAR(100) NOT NULL UNIQUE,
-        date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        date_updated TIMESTAMPTZ (3) NOT NULL DEFAULT NOW ()
-    );
 
-CREATE INDEX idx_job_families_slug ON job_families (slug);
+CREATE TABLE resources (
+  id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  content_type  TEXT NOT NULL,
+  resource_type resource_type NOT NULL,
+  public_id     VARCHAR(255) UNIQUE NOT NULL,
+  size          BIGINT NOT NULL,
+  name          TEXT NOT NULL,
+  uploaded_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-CREATE TABLE
-    sub_families (
-        id BIGSERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL UNIQUE, -- Software Engineering, Software Testing, AI, ....
-        job_family_id BIGINT NOT NULL,
-        date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        date_updated TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        CONSTRAINT fk_sub_families_job_family FOREIGN KEY (job_family_id) REFERENCES job_families (id) ON DELETE CASCADE
-    );
-
-CREATE INDEX idx_sub_families_job_family ON sub_families (job_family_id);
-
-CREATE TABLE
-    job_roles (
-        id BIGSERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL UNIQUE, -- Software Engineer, Backend Developer, Frontend Developer, Mobile Developer, Fullstack Developer, Blockchain Engineer, ...
-        sub_family_id BIGINT NOT NULL,
-        date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        date_updated TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        CONSTRAINT fk_job_roles_sub_family FOREIGN KEY (sub_family_id) REFERENCES sub_families (id) ON DELETE CASCADE
-    );
-
-CREATE INDEX idx_job_roles_sub_family ON job_roles (sub_family_id);
+CREATE INDEX idx_resources_public_id ON resources(public_id);
 
 -- =====================================================
--- SKILLS TABLES
+-- COMPANIES
 -- =====================================================
-CREATE TABLE
-    skills (
-        id BIGSERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL UNIQUE,
-        aliases JSONB,
-        date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW ()
-    );
 
-CREATE INDEX idx_skills_name ON skills (name);
+CREATE TABLE companies (
+  id               BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name             VARCHAR(200) NOT NULL,
+  website          VARCHAR(255),
+  size             company_size,
+  description      TEXT,
+  phone            VARCHAR(20),
+  email            VARCHAR(255),
+  industry         VARCHAR(100),
+  logo_resource_id BIGINT REFERENCES resources(id),
+  is_verified      BOOLEAN NOT NULL DEFAULT false,
+  date_created     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  date_updated     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-CREATE INDEX idx_skills_aliases ON skills USING GIN (aliases);
+CREATE INDEX idx_companies_name ON companies(name);
+CREATE INDEX idx_companies_industry ON companies(industry);
 
-CREATE TABLE
-    candidate_skills (
-        candidate_id BIGINT NOT NULL,
-        skill_id BIGINT NOT NULL,
-        level INTEGER CHECK (
-            level >= 0
-            AND level <= 5
-        ), -- 0..5
-        PRIMARY KEY (candidate_id, skill_id),
-        CONSTRAINT fk_candidate_skills_candidate FOREIGN KEY (candidate_id) REFERENCES candidates (id) ON DELETE CASCADE,
-        CONSTRAINT fk_candidate_skills_skill FOREIGN KEY (skill_id) REFERENCES skills (id) ON DELETE CASCADE
-    );
-
-CREATE INDEX idx_candidate_skills_candidate ON candidate_skills (candidate_id);
-
-CREATE INDEX idx_candidate_skills_skill ON candidate_skills (skill_id);
-
-CREATE INDEX idx_candidate_skills_level ON candidate_skills (level);
+CREATE TABLE company_locations (
+  company_id    BIGINT NOT NULL REFERENCES companies(id),
+  location_id   BIGINT NOT NULL REFERENCES locations(id),
+  is_headquarter BOOLEAN NOT NULL DEFAULT false,
+  PRIMARY KEY (company_id, location_id)
+);
 
 -- =====================================================
--- JOB TABLES
+-- USER PROFILES
 -- =====================================================
-CREATE TABLE
-    jobs (
-        id BIGSERIAL PRIMARY KEY,
-        company_id BIGINT NOT NULL,
-        title VARCHAR(200) NOT NULL,
-        job_role_id BIGINT,
-        seniority seniority_level NOT NULL,
-        employment_type employment_type NOT NULL,
-        min_experience_years INTEGER,
-        location_id BIGINT,
-        work_mode work_mode NOT NULL,
-        salary_min INTEGER,
-        salary_max INTEGER,
-        currency VARCHAR(10),
-        max_candidates int,
-        date_posted TIMESTAMPTZ (3),
-        date_expires TIMESTAMPTZ (3),
-        status job_status NOT NULL,
-        CONSTRAINT fk_jobs_company FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
-        CONSTRAINT fk_jobs_job_role FOREIGN KEY (job_role_id) REFERENCES job_roles (id) ON DELETE SET NULL,
-        CONSTRAINT fk_jobs_location FOREIGN KEY (location_id) REFERENCES locations (id) ON DELETE SET NULL
-    );
 
-CREATE INDEX idx_jobs_company ON jobs (company_id);
+CREATE TABLE moderators (
+  id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  account_id   BIGINT UNIQUE NOT NULL REFERENCES accounts(id),
+  full_name    VARCHAR(150),
+  phone        VARCHAR(20),
+  date_created TIMESTAMPTZ NOT NULL DEFAULT now(),
+  date_updated TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-CREATE INDEX idx_jobs_job_role ON jobs (job_role_id);
+CREATE TABLE candidates (
+  id                BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  account_id        BIGINT UNIQUE NOT NULL REFERENCES accounts(id),
+  full_name         VARCHAR(150),
+  phone             VARCHAR(20),
+  location_id       BIGINT REFERENCES locations(id),
+  experience_years  experience_years,
+  salary_expect     INT,
+  currency          VARCHAR(10),
+  remote_pref       BOOLEAN,
+  relocation_pref   BOOLEAN,
+  avatar_resource_id BIGINT REFERENCES resources(id),
+  bio               TEXT,
+  date_created      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  date_updated      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-CREATE INDEX idx_jobs_location ON jobs (location_id);
+CREATE INDEX idx_candidates_account_id ON candidates(account_id);
+CREATE INDEX idx_candidates_location_id ON candidates(location_id);
+CREATE INDEX idx_candidates_experience_years ON candidates(experience_years);
 
-CREATE INDEX idx_jobs_status ON jobs (status);
+CREATE TABLE recruiters (
+  id                BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  account_id        BIGINT UNIQUE NOT NULL REFERENCES accounts(id),
+  full_name         VARCHAR(150),
+  phone             VARCHAR(20),
+  avatar_resource_id BIGINT REFERENCES resources(id),
+  company_id        BIGINT NOT NULL REFERENCES companies(id),
+  date_created      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  date_updated      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-CREATE INDEX idx_jobs_seniority ON jobs (seniority);
-
-CREATE INDEX idx_jobs_work_mode ON jobs (work_mode);
-
-CREATE INDEX idx_jobs_date_posted ON jobs (date_posted DESC);
-
-CREATE INDEX idx_jobs_date_expires ON jobs (date_expires);
-
--- Job Descriptions
-CREATE TABLE
-    job_description (
-        id BIGSERIAL PRIMARY KEY,
-        job_id BIGINT NOT NULL,
-        summary TEXT,
-        responsibilities TEXT,
-        requirements TEXT,
-        nice_to_have TEXT,
-        benefits TEXT,
-        hiring_process TEXT,
-        notes TEXT,
-        CONSTRAINT fk_job_description_job FOREIGN KEY (job_id) REFERENCES jobs (id) ON DELETE CASCADE,
-        CONSTRAINT uq_job_description_job UNIQUE (job_id)
-    );
-
-CREATE INDEX idx_job_description_job ON job_description (job_id);
-
-CREATE TABLE
-    job_skill_requirements (
-        job_id BIGINT NOT NULL,
-        skill_id BIGINT NOT NULL,
-        --         level INTEGER NOT NULL CHECK (
-        --             level >= 0
-        --             AND level <= 5
-        --         ),
-        PRIMARY KEY (job_id, skill_id),
-        CONSTRAINT fk_job_skill_requirements_job FOREIGN KEY (job_id) REFERENCES jobs (id) ON DELETE CASCADE,
-        CONSTRAINT fk_job_skill_requirements_skill FOREIGN KEY (skill_id) REFERENCES skills (id) ON DELETE CASCADE
-    );
-
-CREATE INDEX idx_job_skill_requirements_job ON job_skill_requirements (job_id);
-
-CREATE INDEX idx_job_skill_requirements_skill ON job_skill_requirements (skill_id);
+CREATE INDEX idx_recruiters_account_id ON recruiters(account_id);
+CREATE INDEX idx_recruiters_company_id ON recruiters(company_id);
 
 -- =====================================================
--- APPLICATION TABLES
+-- COMPANY VERIFICATIONS
 -- =====================================================
-CREATE TABLE
-    job_applications (
-        id BIGSERIAL PRIMARY KEY,
-        candidate_id BIGINT NOT NULL,
-        job_id BIGINT NOT NULL,
-        status application_status NOT NULL DEFAULT 'SUBMITTED',
-        cv_resource_id BIGINT NOT NULL,
-        applied_at TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        CONSTRAINT fk_job_applications_candidate FOREIGN KEY (candidate_id) REFERENCES candidates (id) ON DELETE CASCADE,
-        CONSTRAINT fk_job_applications_job FOREIGN KEY (job_id) REFERENCES jobs (id) ON DELETE CASCADE,
-        CONSTRAINT uq_job_applications_candidate_job UNIQUE (candidate_id, job_id)
-    );
 
-CREATE INDEX idx_job_applications_candidate ON job_applications (candidate_id);
+CREATE TABLE company_verifications (
+  id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  company_id    BIGINT NOT NULL REFERENCES companies(id),
+  status        verification_status NOT NULL DEFAULT 'SUBMITTED',
+  note          TEXT,
+  submitted_by  BIGINT NOT NULL REFERENCES recruiters(id),
+  reviewed_by   BIGINT REFERENCES moderators(id),
+  submitted_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  reviewed_at   TIMESTAMPTZ
+);
 
-CREATE INDEX idx_job_applications_job ON job_applications (job_id);
+CREATE INDEX idx_company_verifications_company_id ON company_verifications(company_id);
+CREATE INDEX idx_company_verifications_status ON company_verifications(status);
 
-CREATE INDEX idx_job_applications_status ON job_applications (status);
-
-CREATE INDEX idx_job_applications_applied_at ON job_applications (applied_at DESC);
-
-CREATE TABLE
-    interviews (
-        id BIGSERIAL PRIMARY KEY,
-        application_id BIGINT NOT NULL,
-        scheduled_at TIMESTAMPTZ (3) NOT NULL,
-        location_id BIGINT NOT NULL,
-        status interview_status NOT NULL DEFAULT 'SCHEDULED',
-        date_created TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        date_updated TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        notes TEXT,
-        CONSTRAINT fk_interviews_application FOREIGN KEY (application_id) REFERENCES job_applications (id) ON DELETE CASCADE,
-        CONSTRAINT fk_interviews_location FOREIGN KEY (location_id) REFERENCES locations (id)
-    );
-
-CREATE TABLE
-    saved_jobs (
-        id BIGSERIAL PRIMARY KEY,
-        candidate_id BIGINT NOT NULL,
-        job_id BIGINT NOT NULL,
-        saved_at TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        CONSTRAINT fk_saved_jobs_candidate FOREIGN KEY (candidate_id) REFERENCES candidates (id) ON DELETE CASCADE,
-        CONSTRAINT fk_saved_jobs_job FOREIGN KEY (job_id) REFERENCES jobs (id) ON DELETE CASCADE,
-        CONSTRAINT uq_saved_jobs_candidate_job UNIQUE (candidate_id, job_id)
-    );
-
-CREATE INDEX idx_saved_jobs_candidate ON saved_jobs (candidate_id);
-
-CREATE INDEX idx_saved_jobs_job ON saved_jobs (job_id);
-
-CREATE INDEX idx_saved_jobs_saved_at ON saved_jobs (saved_at DESC);
+CREATE TABLE company_verification_attachments (
+  verification_id BIGINT NOT NULL REFERENCES company_verifications(id),
+  resource_id     BIGINT NOT NULL REFERENCES resources(id),
+  PRIMARY KEY (verification_id, resource_id)
+);
 
 -- =====================================================
--- RESOURCE TABLES
+-- CANDIDATE DETAILS
 -- =====================================================
-CREATE TABLE
-    resources (
-        id BIGSERIAL PRIMARY KEY,
-        owner_id BIGINT, -- For candidate|s.o who uploaded the resume/avatar etc.
-        mime_type TEXT NOT NULL,
-        content_type TEXT NOT NULL,
-        resource_type resource_type NOT NULL,
-        url TEXT NOT NULL,
-        public_id VARCHAR(255) NOT NULL UNIQUE,
-        name TEXT NOT NULL,
-        uploaded_at TIMESTAMPTZ (3) NOT NULL DEFAULT NOW ()
-    );
 
-CREATE INDEX idx_resources_uploaded_at ON resources (uploaded_at DESC);
+CREATE TABLE candidate_work_experiences (
+  id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  candidate_id BIGINT NOT NULL REFERENCES candidates(id),
+  company_id   BIGINT REFERENCES companies(id),
+  job_title    VARCHAR(150),
+  start_date   DATE,
+  end_date     DATE,
+  is_current   BOOLEAN NOT NULL DEFAULT false,
+  description  TEXT,
 
-CREATE TABLE
-    attestation_resources (
-        company_id BIGINT NOT NULL,
-        resource_id BIGINT NOT NULL UNIQUE,
-        PRIMARY KEY (company_id, resource_id),
-        CONSTRAINT fk_attestation_resources_company FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
-        CONSTRAINT fk_attestation_resources_resource FOREIGN KEY (resource_id) REFERENCES resources (id) ON DELETE CASCADE
-    );
+  CONSTRAINT chk_work_exp_dates CHECK (end_date IS NULL OR end_date >= start_date)
+);
+
+CREATE INDEX idx_candidate_work_exp_candidate_id ON candidate_work_experiences(candidate_id);
+
+CREATE TABLE schools (
+  id   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE candidate_educations (
+  id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  candidate_id   BIGINT NOT NULL REFERENCES candidates(id),
+  school_id      BIGINT REFERENCES schools(id),
+  degree         VARCHAR(150),
+  field_of_study VARCHAR(150),
+  start_year     INT,
+  end_year       INT,
+  is_current     BOOLEAN NOT NULL DEFAULT false,
+  description    TEXT,
+
+  CONSTRAINT chk_education_years CHECK (end_year IS NULL OR end_year >= start_year)
+);
+
+CREATE INDEX idx_candidate_educations_candidate_id ON candidate_educations(candidate_id);
+
+CREATE TABLE candidate_resumes (
+  id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  candidate_id BIGINT NOT NULL REFERENCES candidates(id),
+  resource_id  BIGINT NOT NULL REFERENCES resources(id),
+  title        VARCHAR(100),
+  date_created TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_candidate_resumes_candidate_id ON candidate_resumes(candidate_id);
 
 -- =====================================================
--- ANATYTICS TABLES
+-- JOB TAXONOMY
 -- =====================================================
-CREATE TABLE
-    user_interactions (
-        id BIGSERIAL PRIMARY KEY,
-        account_id BIGINT,
-        event_type interaction_event_type NOT NULL,
-        external_id VARCHAR(64) UNIQUE,
-        job_id BIGINT,
-        metadata JSONB,
-        occurred_at TIMESTAMPTZ (3) NOT NULL DEFAULT NOW (),
-        CONSTRAINT fk_analytics_events_account FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE SET NULL,
-        CONSTRAINT fk_analytics_events_job FOREIGN KEY (job_id) REFERENCES jobs (id) ON DELETE SET NULL
-    );
 
-CREATE TABLE
-    outbox_events (
-        id BIGSERIAL PRIMARY KEY,
-        aggregate_type VARCHAR(50) NOT NULL, -- 'JOB'
-        aggregate_id BIGINT NOT NULL, -- job_id
-        event_type VARCHAR(20) NOT NULL, -- CREATED/UPDATED/DELETED
-        payload JSONB NOT NULL, -- title/desc/skills/updated_at...
-        occurred_at TIMESTAMPTZ NOT NULL DEFAULT now (),
-        status outbox_status NOT NULL DEFAULT 'PENDING',
-        attempts INT NOT NULL DEFAULT 0,
-        trace_id UUID NOT NULL DEFAULT gen_random_uuid ()
-    );
+CREATE TABLE job_categories (
+  id        BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name      VARCHAR(100) NOT NULL,
+  slug      VARCHAR(100) UNIQUE NOT NULL,
+  parent_id BIGINT REFERENCES job_categories(id),
+  path      LTREE,
+  is_leaf   BOOLEAN NOT NULL DEFAULT false
+);
 
-CREATE INDEX idx_outbox_pending ON outbox_events (status, occurred_at);
+CREATE INDEX idx_job_categories_parent_id ON job_categories(parent_id);
+CREATE INDEX idx_job_categories_slug ON job_categories(slug);
+CREATE INDEX idx_job_categories_path ON job_categories USING GIST(path);
 
-CREATE INDEX idx_outbox_agg ON outbox_events (aggregate_type, aggregate_id);
+CREATE TABLE candidate_positions (
+  candidate_id BIGINT NOT NULL REFERENCES candidates(id),
+  category_id  BIGINT NOT NULL REFERENCES job_categories(id),
+  PRIMARY KEY (candidate_id, category_id)
+);
+
+-- =====================================================
+-- SKILLS
+-- =====================================================
+
+CREATE TABLE skills (
+  id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name         VARCHAR(100) UNIQUE NOT NULL,
+  aliases      JSONB,
+  date_created TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_skills_name ON skills(name);
+
+CREATE TABLE candidate_skills (
+  candidate_id BIGINT NOT NULL REFERENCES candidates(id),
+  skill_id     BIGINT NOT NULL REFERENCES skills(id),
+  PRIMARY KEY (candidate_id, skill_id)
+);
+
+-- =====================================================
+-- JOBS
+-- =====================================================
+
+CREATE TABLE jobs (
+  id                   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  company_id           BIGINT NOT NULL REFERENCES companies(id),
+  recruiter_id         BIGINT NOT NULL REFERENCES recruiters(id),
+  title                VARCHAR(200) NOT NULL,
+  category_id          BIGINT REFERENCES job_categories(id),
+  seniority            seniority_level NOT NULL,
+  employment_type      employment_type NOT NULL,
+  min_experience_years INT,
+  location_id          BIGINT REFERENCES locations(id),
+  work_mode            work_mode NOT NULL,
+  salary_min           INT,
+  salary_max           INT,
+  currency             VARCHAR(10),
+  max_candidates       INT,
+  date_posted          TIMESTAMPTZ,
+  date_expires         TIMESTAMPTZ,
+  status               job_status NOT NULL DEFAULT 'DRAFT',
+  date_created         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  date_updated         TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CONSTRAINT chk_jobs_salary CHECK (salary_min IS NULL OR salary_max IS NULL OR salary_min <= salary_max),
+  CONSTRAINT chk_jobs_max_candidates CHECK (max_candidates IS NULL OR max_candidates > 0),
+  CONSTRAINT chk_jobs_dates CHECK (date_expires IS NULL OR date_posted IS NULL OR date_expires > date_posted)
+);
+
+CREATE INDEX idx_jobs_company_id ON jobs(company_id);
+CREATE INDEX idx_jobs_recruiter_id ON jobs(recruiter_id);
+CREATE INDEX idx_jobs_category_id ON jobs(category_id);
+CREATE INDEX idx_jobs_location_id ON jobs(location_id);
+CREATE INDEX idx_jobs_status ON jobs(status);
+CREATE INDEX idx_jobs_status_date_posted ON jobs(status, date_posted);
+CREATE INDEX idx_jobs_filters ON jobs(seniority, employment_type, work_mode);
+
+CREATE TABLE job_descriptions (
+  job_id           BIGINT PRIMARY KEY REFERENCES jobs(id),
+  summary          TEXT,
+  responsibilities TEXT,
+  requirements     TEXT,
+  nice_to_have     TEXT,
+  benefits         TEXT,
+  hiring_process   TEXT,
+  notes            TEXT
+);
+
+CREATE TABLE job_skill_requirements (
+  job_id   BIGINT NOT NULL REFERENCES jobs(id),
+  skill_id BIGINT NOT NULL REFERENCES skills(id),
+  PRIMARY KEY (job_id, skill_id)
+);
+
+-- =====================================================
+-- APPLICATIONS
+-- =====================================================
+
+CREATE TABLE job_applications (
+  id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  candidate_id    BIGINT NOT NULL REFERENCES candidates(id),
+  job_id          BIGINT NOT NULL REFERENCES jobs(id),
+  status          application_status NOT NULL DEFAULT 'SUBMITTED',
+  cv_resource_id  BIGINT NOT NULL REFERENCES resources(id),
+  applied_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CONSTRAINT uq_job_applications_candidate_job UNIQUE (candidate_id, job_id)
+);
+
+CREATE INDEX idx_job_applications_candidate_id ON job_applications(candidate_id);
+CREATE INDEX idx_job_applications_job_id ON job_applications(job_id);
+CREATE INDEX idx_job_applications_status ON job_applications(status);
+
+CREATE TABLE interviews (
+  id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  application_id BIGINT NOT NULL REFERENCES job_applications(id),
+  scheduled_at   TIMESTAMPTZ NOT NULL,
+  location_id    BIGINT REFERENCES locations(id),
+  meeting_url    VARCHAR(500),
+  status         interview_status NOT NULL DEFAULT 'SCHEDULED',
+  notes          TEXT,
+  date_created   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  date_updated   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_interviews_application_id ON interviews(application_id);
+CREATE INDEX idx_interviews_status ON interviews(status);
+CREATE INDEX idx_interviews_scheduled_at ON interviews(scheduled_at);
+
+CREATE TABLE saved_jobs (
+  id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  candidate_id BIGINT NOT NULL REFERENCES candidates(id),
+  job_id       BIGINT NOT NULL REFERENCES jobs(id),
+  saved_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CONSTRAINT uq_saved_jobs_candidate_job UNIQUE (candidate_id, job_id)
+);
+
+CREATE INDEX idx_saved_jobs_candidate_id ON saved_jobs(candidate_id);
+CREATE INDEX idx_saved_jobs_job_id ON saved_jobs(job_id);
+
+-- =====================================================
+-- ANALYTICS
+-- =====================================================
+
+CREATE TABLE user_interactions (
+  id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  account_id  BIGINT REFERENCES accounts(id),
+  event_type  interaction_event_type NOT NULL,
+  external_id VARCHAR(64) UNIQUE,
+  job_id      BIGINT REFERENCES jobs(id),
+  metadata    JSONB,
+  occurred_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_user_interactions_account_event ON user_interactions(account_id, event_type);
+CREATE INDEX idx_user_interactions_job_id ON user_interactions(job_id);
+CREATE INDEX idx_user_interactions_occurred_at ON user_interactions(occurred_at);
+
+CREATE TABLE outbox_events (
+  id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  aggregate_type VARCHAR(50) NOT NULL,
+  aggregate_id   VARCHAR(64) NOT NULL,
+  event_type     VARCHAR(50) NOT NULL,
+  payload        JSONB NOT NULL,
+  occurred_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  status         outbox_status NOT NULL DEFAULT 'PENDING',
+  attempts       INT NOT NULL DEFAULT 0,
+  processed_at   TIMESTAMPTZ,
+  trace_id       UUID
+);
+
+CREATE INDEX idx_outbox_events_status_occurred ON outbox_events(status, occurred_at);
+CREATE INDEX idx_outbox_events_aggregate ON outbox_events(aggregate_type, aggregate_id);
+CREATE INDEX idx_outbox_events_trace_id ON outbox_events(trace_id);

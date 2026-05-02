@@ -37,3 +37,6 @@ node_modules/
 *.log
 
 **/application-dev.yml
+
+docs
+.mvn
